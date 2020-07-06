@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MobiDB-lite, 3.8.1, Jul 2020
+MobiDB-lite, 3.8.2, Jul 2020
 
 By Marco Necci, Damiano Piovesan & Silvio C.E. Tosatto
 BiocomputingUP lab, Padua, Italy
@@ -32,8 +32,8 @@ import mdblib.logger as logger
 from mdblib.protein import Protein
 from mdblib.setdirs import set_pred_dir
 from mdblib.streams import OutStream, InStream
-from mdblib.consensus import MobidbLiteConsensus, SimpleConsensus
-from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, CaidFormat
+from mdblib.consensus import MobidbLiteConsensus, SimpleConsensus, feature_desc
+from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, CaidFormat, FastaFormat
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -155,14 +155,17 @@ class MobidbLite(object):
         if self.outfmt == 0:
             output = InterProFormat(acc, m_cons, _features=self.skip_features)
 
-        elif self.outfmt == 1:
-            output = ExtendedFormat(acc, m_cons, r_cons, _multi_accs=multi_acc)
+        if self.outfmt == 1:
+            output = FastaFormat(acc, m_cons, _features=self.skip_features, feature_desc=feature_desc)
 
         elif self.outfmt == 2:
+            output = ExtendedFormat(acc, m_cons, r_cons, _multi_accs=multi_acc)
+
+        elif self.outfmt == 3:
             output = Mobidb3Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
                                    injection=self.additional_data)
 
-        elif self.outfmt == 3:
+        elif self.outfmt == 4:
             output = CaidFormat(acc, seq, m_cons, preds, _multi_accs=multi_acc)
 
         return output

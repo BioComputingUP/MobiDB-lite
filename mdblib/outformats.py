@@ -27,13 +27,13 @@ class Formatter(object):
 
 class InterProFormat(Formatter):
     def __init__(self, _acc, _mdbl_consensus, _features=False):
-        self.features = _features
+        self.skip_features = _features
         self.mdbl_consensus = _mdbl_consensus
         super(InterProFormat, self).__init__(_acc)
 
     def _get_output_obj(self):
         if self.mdbl_consensus.prediction.regions:
-            if self.features is False:
+            if self.skip_features is False:
                 out_obj = [[self.acc] + r for r in self.mdbl_consensus.enriched_regions]
             else:
                 out_obj = [[self.acc] + r for r in self.mdbl_consensus.prediction.regions]
@@ -43,13 +43,48 @@ class InterProFormat(Formatter):
 
     def __repr__(self):
         if self.output:
-            if self.features is False:
+            if self.skip_features is False:
                 output = "\n".join(["{}\t{}\t{}{}".format(
                     ele[0], ele[1], ele[2], "\t{}".format(
                         ele[3]) if ele[3] != "D" else '') for ele in self.output[0]])
             else:
                 output = "\n".join(["{}\t{}\t{}".format(
                         ele[0], ele[1], ele[2]) for ele in self.output[0]])
+            return output
+        else:
+            return ""
+
+
+class FastaFormat(Formatter):
+    def __init__(self, _acc, _mdbl_consensus, _features=False, feature_desc=None):
+        self.skip_features = _features
+        self.mdbl_consensus = _mdbl_consensus
+        self.feature_desc = {v: k for k, v in feature_desc.items()}
+        super(FastaFormat, self).__init__(_acc)
+
+    def _get_output_obj(self):
+        if self.mdbl_consensus.prediction.regions:
+            out_obj = {
+                "accession": self.acc,
+                "consensus": self.mdbl_consensus.prediction.states,
+                "eregions": self.mdbl_consensus.enriched_regions if self.skip_features is False else None
+            }
+            self.isnone = False
+            return [out_obj]
+
+    def __repr__(self):
+        if self.output:
+            if self.skip_features is False:
+                output = []
+                for e in self.output:
+                    c = list(e['consensus'])
+                    for reg in e['eregions']:
+                        if reg[2] != 'D':
+                            c[reg[0]-1: reg[1]] = [self.feature_desc[reg[2]]] * (reg[1] - reg[0] + 1)
+                    output.append("{}\n{}".format(e['accession'], ''.join(c)))
+                output = '\n'.join(output)
+            else:
+                output = '\n'.join(["{}\n{}".format(o['accession'], o['consensus']) for o in self.output])
             return output
         else:
             return ""

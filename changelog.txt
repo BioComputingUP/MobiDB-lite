@@ -235,5 +235,8 @@ Move polar subregion to level 8
 3.8.1 | 04/07/2020
 Fix a bug where the wrong number of arguments were passed to CaidFormat
 Add a more relaxed consensus (thr=.375) in -f 1
-Remove 'pred' key from f -1
+Remove 'pred' key from -f 1
 Expose two new attributes of the parent class Consensus: 'agreement' and 'summed_states'
+
+3.8.2 | 06/07/2020
+Add a new format output: 'fasta'

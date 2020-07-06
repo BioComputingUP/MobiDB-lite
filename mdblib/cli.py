@@ -30,7 +30,7 @@ def arg_parser(cd):
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help='log level filter. All levels <= choice will be displayed')
 
-    parser.add_argument('-f', '--outputFormat', type=int, choices=range(4), default=0,
+    parser.add_argument('-f', '--outputFormat', type=int, choices=range(5), default=0,
                         help='output format, see README.md for further details')
 
     parser.add_argument('-c', '--conf', type=str, default=os.path.join(cd, 'config.ini'),
