@@ -1,6 +1,7 @@
 MobiDB-lite, long disorder consensus predictor
 ==============================================
-Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto
+Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto  
+
 Version 3.8.2
 
 Introduction
