@@ -1,6 +1,6 @@
 MobiDB-lite, long disorder consensus predictor
 ==============================================
-Marco Necci, Damiano Piovesan, Zsuzsanna Dosztányi and Silvio C.E. Tosatto
+Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto
 Version 3.8.2
 
 Introduction
@@ -75,8 +75,9 @@ option has to be used::
 
 
 The output is provided in 3 different formats. The output format can be chosen
-with the ``-f`` option, which accepts numbers from 0 to 3. The default short
-version (option 0) includes the protein name and start/end position of the
+with the ``-f`` option, which accepts one of the following values: `interpro`. 
+`fasta`, `vertical`, `extended`, `mobidb3`, `caid`. The default short version 
+(option `interpro`) includes the protein name and start/end position of the
 disorder regions, one region per line. All elements are separated by a TAB::
 
     sp|Q15648|MED1_HUMAN	609	706
@@ -106,8 +107,52 @@ default. When using this option, sequence features are skipped::
     sp|Q15648|MED1_HUMAN	947	1566
 
 
+Option `fasta` gives the output in fasta format (new in version 3.8.2).
+In this format `D` is disorder, `S` is structure and region subtypes are 
+given as figures from 1 to 8::
+    
+    sp|Q15648|MED1_HUMAN
+    SSS...
+    SSSSSSSSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    D888888888888888888888888888888DDDDDDDDDDDDDDDDDDD
+    DDDDDDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDD
+    DDDDD888888888888888SSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDDDDDDDDDDDDDSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD111111
+    11111111111111111111DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDD77777777777777777777777
+    77777777777777777777777777777777777777777777777777
+    777777D8888888888888888888888888888888888888888DDD
+    DDD...
 
-Option 1 provides InterPro extended output (only MobiDB-lite prediction, skip
+Sequence features can be silenced by using option -sf, inactive by
+default. When using this option, sequence features are expressed as `D`::
+
+    sp|QDDDDD|MEDD_HUMAN
+    SSS...
+    SSSSSSSSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDDDDDDDDDDDDDSSSSSSS
+    SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    DDD...
+
+
+Option `vertical` gives the output with one residue per line (new in version 3.8.2).
+In this format each line will will have three values: `res  score  state`. Where `res`
+is the amino acid one letter code, `score` is the agreement score of the consensus, 
+`state` if the predictor decision between order (`S`) and disorder (`D`) ::
+
+Option `extended` provides InterPro extended output (only MobiDB-lite prediction, skip
 fully structured proteins). Contains the binary MobiDB-lite prediction and
 the IDRs boundaries. Also contains a relaxed consensus (rlx_consensus) calculated
 at a threshold of .375 (New in version 3.8.1) ::
@@ -125,8 +170,8 @@ at a threshold of .375 (New in version 3.8.1) ::
     }
 
 
-Option 2 provides an extended output and structured output that is used
-to create annotations for MobiDB entries::
+Option `mobidb3` provides an extended output and structured output that is used
+to create annotations for MobiDB3 entries::
 
     {
       "sequence": "MKA...IGN",
@@ -343,7 +388,7 @@ to create annotations for MobiDB entries::
       "accession": "sp|Q15648|MED1_HUMAN"
     }
 
-Option 3 provides a very extended output, containing both scores and regions
+Option `caid` provides a very extended output, containing both scores and regions
 for each predictor, but it's restricted to disorder predictors plus DynaMine::
 
     {

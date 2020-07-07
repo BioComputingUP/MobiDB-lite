@@ -33,7 +33,7 @@ from mdblib.protein import Protein
 from mdblib.setdirs import set_pred_dir
 from mdblib.streams import OutStream, InStream
 from mdblib.consensus import MobidbLiteConsensus, SimpleConsensus, feature_desc
-from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, CaidFormat, FastaFormat
+from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, CaidFormat, FastaFormat, VerticalFormat
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -46,10 +46,15 @@ class MobidbLite(object):
     MobiDB-Lite application launcher. Manages predictors execution,
     consensus computation and output formatting based on parameters.
     """
-    outgroups = {'0': "main", '1': "main", '2': "mobidb3", '3': "caid"}
+    outgroups = {'interpro': 'main',
+                 'fasta': 'main',
+                 'vertical': 'main',
+                 'extended': 'main',
+                 'mobidb3': 'mobidb3',
+                 'caid': 'caid'}
 
     def __init__(self, fasta, launchdir=None, conf=None, architecture='64', threads=0, outfile=None,
-                 outfmt=0, skip_features=False, outmult_by='acc=', outmultsep=',',
+                 outfmt='interpro', skip_features=False, outmult_by='acc=', outmultsep=',',
                  parse_acc=False, force_consensus=False):
 
         cd = launchdir if launchdir else os.path.dirname(os.path.realpath(__file__))
@@ -63,7 +68,7 @@ class MobidbLite(object):
         self.bin_dirs = set_pred_dir(cd, conf.items('bin_directories'))
         self.active_preds = set(self.bin_dirs.keys())
         self.thresholds = {p: float(t) for p, t in dict(conf.items('thresholds')).items()}
-        self.outgroup = self.outgroups[str(outfmt)]
+        self.outgroup = self.outgroups[outfmt]
 
         self.parse_acc = parse_acc
         self.skip_features = skip_features
@@ -85,7 +90,6 @@ class MobidbLite(object):
         for prot, s_cons, r_cons, m_cons in self.preds:
             outobj = self.fmt_output(prot.acc, prot.uniprot_acc, prot.seq, prot.preds,
                                      s_cons=s_cons, r_cons=r_cons, m_cons=m_cons)
-
             if outobj.isnone is False:
                 self.outstream.write('{}\n'.format(outobj))
 
@@ -152,20 +156,23 @@ class MobidbLite(object):
             acc = uacc if uacc else acc
 
         # generate output based on selected output format
-        if self.outfmt == 0:
+        if self.outfmt == 'interpro':
             output = InterProFormat(acc, m_cons, _features=self.skip_features)
 
-        if self.outfmt == 1:
+        if self.outfmt == 'fasta':
             output = FastaFormat(acc, m_cons, _features=self.skip_features, feature_desc=feature_desc)
 
-        elif self.outfmt == 2:
+        if self.outfmt == 'vertical':
+            output = VerticalFormat(acc, seq, m_cons, _features=self.skip_features, feature_desc=feature_desc)
+
+        elif self.outfmt == 'extended':
             output = ExtendedFormat(acc, m_cons, r_cons, _multi_accs=multi_acc)
 
-        elif self.outfmt == 3:
+        elif self.outfmt == 'mobidb3':
             output = Mobidb3Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
                                    injection=self.additional_data)
 
-        elif self.outfmt == 4:
+        elif self.outfmt == 'caid':
             output = CaidFormat(acc, seq, m_cons, preds, _multi_accs=multi_acc)
 
         return output
@@ -174,14 +181,14 @@ class MobidbLite(object):
         simple_c = None
         relaxed_c = None
         mobidblite_c = MobidbLiteConsensus(predictions, sequence,
-                                           pappu=True if self.outfmt == 2 else False,
+                                           pappu=True if self.outfmt == 'mobidb3' else False,
                                            force=self.force_consensus)
 
-        if self.outfmt == 1:
+        if self.outfmt == 'extended':
             relaxed_c = SimpleConsensus(predictions, sequence, force=self.force_consensus, threshold=.375)
 
 
-        if self.outfmt == 2:
+        if self.outfmt == 'mobidb3':
             simple_c = SimpleConsensus(predictions, sequence, force=self.force_consensus)
 
 

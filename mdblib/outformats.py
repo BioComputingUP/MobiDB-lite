@@ -90,6 +90,37 @@ class FastaFormat(Formatter):
             return ""
 
 
+class VerticalFormat(Formatter):
+    def __init__(self, _acc, _seq, _mdbl_consensus, _features=False, feature_desc=None):
+        self.sequence = _seq
+        self.skip_features = _features
+        self.mdbl_consensus = _mdbl_consensus
+        self.feature_desc = {v: k for k, v in feature_desc.items()}
+        super(VerticalFormat, self).__init__(_acc)
+
+    def _get_output_obj(self):
+        if self.mdbl_consensus.prediction.regions:
+            out_obj = {
+                "accession": self.acc,
+                "sequence": self.sequence,
+                "consensus": self.mdbl_consensus.prediction.states,
+                "scores": self.mdbl_consensus.agreement,
+                "eregions": self.mdbl_consensus.enriched_regions if self.skip_features is False else None
+            }
+            self.isnone = False
+            return [out_obj]
+
+    def __repr__(self):
+        if self.output:
+            return '\n'.join(['>{}\n{}'.format(
+                o['accession'],
+                '\n'.join(['{}\t{}\t{}'.format(*z) for z in zip(o['sequence'], o['scores'], o['consensus'])])
+            ) for o in self.output])
+
+        else:
+            return ""
+
+
 class ExtendedFormat(Formatter):
     def __init__(self, _acc, _mdbl_consensus, rlx_consensus, **kwargs):
         self.mdbl_consensus = _mdbl_consensus
