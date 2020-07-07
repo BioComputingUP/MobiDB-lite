@@ -415,4 +415,4 @@ MobiDB-lite won't work on OS-X since some of the underlying predictors are
 not compiled for it.
 
 If you encounter any bug or strange behaviour, please don't hesitate and
-contact us at biocompup@ngp-net.bio.unipd.it
+contact us at biocomp@bio.unipd.it.
