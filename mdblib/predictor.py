@@ -67,7 +67,7 @@ class Predictor(object):
 class IUPredL(Predictor):
     tag = 'iupl'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'flat'
     shared_name = 'iupred'
 
@@ -103,7 +103,7 @@ class IUPredL(Predictor):
 class IUPredS(Predictor):
     tag = 'iups'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'flat'
     shared_name = 'iupred'
 
@@ -139,7 +139,7 @@ class IUPredS(Predictor):
 class ESpritzN(Predictor):
     tag = 'espN'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'disbin'
     shared_name = 'espritz'
 
@@ -166,7 +166,7 @@ class ESpritzN(Predictor):
 class ESpritzD(Predictor):
     tag = 'espD'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'disbin'
     shared_name = 'espritz'
 
@@ -193,7 +193,7 @@ class ESpritzD(Predictor):
 class ESpritzX(Predictor):
     tag = 'espX'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'disbin'
     shared_name = 'espritz'
 
@@ -220,7 +220,7 @@ class ESpritzX(Predictor):
 class GlobPlot(Predictor):
     tag = 'glo'
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'flat'
     shared_name = 'globplot'
     suppress_stderr = True
@@ -243,7 +243,7 @@ class GlobPlot(Predictor):
 class DisEMBL(Predictor):
     tag = ['dis465', 'disHL']
     types = ['disorder', 'mobidblite']
-    groups = ['main', 'mobidb3', 'caid']
+    groups = ['main', 'mobidb3', 'mobidb4', 'caid']
     intype = 'flat'
     shared_name = 'disembl'
 
@@ -269,7 +269,7 @@ class DisEMBL(Predictor):
 class VSL2b(Predictor):
     tag = 'vsl'
     types = ['disorder']
-    groups = ['mobidb3', 'caid']
+    groups = ['mobidb3', 'mobidb4', 'caid']
     intype = 'flat'
     shared_name = 'vsl2'
     suppress_stderr = True
@@ -309,7 +309,7 @@ class VSL2b(Predictor):
 class JRonn(Predictor):
     tag = 'jronn'
     types = ['disorder']
-    groups = ['mobidb3', 'caid']
+    groups = ['mobidb3', 'mobidb4', 'caid']
     intype = 'fasta'
     shared_name = 'jronn'
 
@@ -333,7 +333,7 @@ class JRonn(Predictor):
 class Seg(Predictor):
     tag = 'seg'
     types = ['lowcomp']
-    groups = ['mobidb3', 'main']
+    groups = ['mobidb3', 'mobidb4', 'main']
     intype = 'fasta'
     shared_name = 'seg'
 
@@ -360,7 +360,7 @@ class Seg(Predictor):
 class Pfilt(Predictor):
     tag = 'pfilt'
     types = ['lowcomp']
-    groups = ['mobidb3']
+    groups = ['mobidb3', 'mobidb4']
     intype = 'fasta'
     shared_name = 'pfilt'
 
@@ -387,7 +387,7 @@ class Pfilt(Predictor):
 class FESS(Predictor):
     tag = ['fess_helix', 'fess_sheet', 'fess_coil']
     types = ['sspops']
-    groups = ['mobidb3']
+    groups = ['mobidb3', 'mobidb4']
     intype = 'fasta'
     shared_name = 'fess'
 
@@ -422,7 +422,7 @@ class FESS(Predictor):
 class DynaMine(Predictor):
     tag = 'dynamine_coil'
     types = ['sspops']
-    groups = ['mobidb3', 'caid']
+    groups = ['mobidb3', 'mobidb4', 'caid']
     intype = 'fasta'
     shared_name = 'dynamine'
 
@@ -442,7 +442,7 @@ class DynaMine(Predictor):
 class Anchor(Predictor):
     tag = 'anchor'
     types = ['bindsite']
-    groups = ['mobidb3', 'caid']
+    groups = ['mobidb3', 'mobidb4', 'caid']
     intype = 'fasta'
     shared_name = 'anchor'
 

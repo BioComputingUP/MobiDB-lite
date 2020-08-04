@@ -33,7 +33,7 @@ from mdblib.protein import Protein
 from mdblib.setdirs import set_pred_dir
 from mdblib.streams import OutStream, InStream
 from mdblib.consensus import MobidbLiteConsensus, SimpleConsensus, feature_desc
-from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, CaidFormat, FastaFormat, VerticalFormat
+from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, Mobidb4Format, CaidFormat, FastaFormat, VerticalFormat
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -51,6 +51,7 @@ class MobidbLite(object):
                  'vertical': 'main',
                  'extended': 'main',
                  'mobidb3': 'mobidb3',
+                 'mobidb4': 'mobidb4',
                  'caid': 'caid'}
 
     def __init__(self, fasta, launchdir=None, conf=None, architecture='64', threads=0, outfile=None,
@@ -172,6 +173,10 @@ class MobidbLite(object):
             output = Mobidb3Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
                                    injection=self.additional_data)
 
+        elif self.outfmt == 'mobidb4':
+            output = Mobidb4Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
+                                   injection=self.additional_data)
+
         elif self.outfmt == 'caid':
             output = CaidFormat(acc, seq, m_cons, preds, _multi_accs=multi_acc)
 
@@ -181,23 +186,20 @@ class MobidbLite(object):
         simple_c = None
         relaxed_c = None
         mobidblite_c = MobidbLiteConsensus(predictions, sequence,
-                                           pappu=True if self.outfmt == 'mobidb3' else False,
+                                           pappu=True if self.outfmt in ['mobidb3', 'mobidb4'] else False,
                                            force=self.force_consensus)
 
         if self.outfmt == 'extended':
             relaxed_c = SimpleConsensus(predictions, sequence, force=self.force_consensus, threshold=.375)
 
-
-        if self.outfmt == 'mobidb3':
+        if self.outfmt in ['mobidb3', 'mobidb4']:
             simple_c = SimpleConsensus(predictions, sequence, force=self.force_consensus)
-
-
 
         return simple_c, relaxed_c, mobidblite_c
 
     def run(self, fasta, architecture, threads, outfile):
 
-        logging.debug('outfmt: %i outgroup: %s', self.outfmt, self.outgroup)
+        logging.debug('outfmt: %s outgroup: %s', self.outfmt, self.outgroup)
 
         with InStream(fasta) as self.instream, OutStream(outfile) as self.outstream:
             # Parse input Fasta
