@@ -301,7 +301,7 @@ class Mobidb4Format(Formatter):
         out_obj.setdefault("sequence", self.seq)
 
         # MobiDB-lite consensus
-        # TODO add content_count, eliminate regions if empty?
+        # TODO eliminate regions if empty?
         count = self.content_count(self.mdbl_consensus.prediction.regions)
         out_obj["prediction-disorder-mobidb_lite"] = {
              'regions': [(r[0], r[1]) for r in self.mdbl_consensus.prediction.regions],
