@@ -2,7 +2,7 @@ MobiDB-lite, long disorder consensus predictor
 ==============================================
 Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto  
 
-Version 3.8.2
+Version 3.8.3
 
 Introduction
 ------------
@@ -77,7 +77,7 @@ option has to be used::
 
 The output is provided in 3 different formats. The output format can be chosen
 with the ``-f`` option, which accepts one of the following values: `interpro`. 
-`fasta`, `vertical`, `extended`, `mobidb3`, `caid`. The default short version 
+`fasta`, `vertical`, `extended`, `mobidb4`, `caid`. The default short version 
 (option `interpro`) includes the protein name and start/end position of the
 disorder regions, one region per line. All elements are separated by a TAB::
 
@@ -171,223 +171,39 @@ at a threshold of .375 (New in version 3.8.1) ::
     }
 
 
-Option `mobidb3` provides an extended output and structured output that is used
-to create annotations for MobiDB3 entries::
-
+Option `mobidb4` provides an extended output and structured output that is used
+to create annotations for MobiDB4 entries::
     {
-      "sequence": "MKA...IGN",
-      "mobidb_consensus": {
-        "disorder": {
-          "predictors": [
-            {
-              "method": "mobidb_lite",
-              "regions": [
-                [609, 706, "D_WC"],
-                [792, 820, "D_WC"],
-                [874, 893, "D_WC"],
-                [947, 1566, "D_WC"]
-              ],
-              "scores": [
-                0.75,
-                0.75,
-                0.75,
-                ...
-                0.625,
-                0.75,
-                0.75
-              ],
-              "dc": 0.48513598987982287
-            },
-            {
-              "method": "mobidb_lite_sub",
-              "regions": [
-                [652, 681, "D_PO"],
-                [806, 820, "D_PO"],
-                ...
-              ]
-            },
-            {
-              "method": "simple",
-              "regions": [
-                [1, 16, "D"],
-                [89, 89, "D"],
-                ...
-              ],
-              "dc": 0.6299810246679317
-            }
-          ]
-        }
-      },
-      "mobidb_data": {
-        "disorder": {
-          "predictors": [
-            {
-              "method": "iupl",
-              "regions": [
-                [1, 15, "D"],
-                [82, 82, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "iups",
-              "regions": [
-                [1, 13, "D"],
-                [538, 572, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "espN",
-              "regions": [
-                [1, 33, "D"],
-                [49, 57, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "espD",
-              "regions": [
-                [990, 1581, "D"]
-              ]
-            },
-            {
-              "method": "espX",
-              "regions": [
-                [1, 17, "D"],
-                [591, 592, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "glo",
-              "regions": [
-                [4, 4, "D"],
-                [6, 6, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "dis465",
-              "regions": [
-                [1, 16, "D"],
-                [51, 55, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "disHL",
-              "regions": [
-                [1, 13, "D"],
-                [25, 36, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "vsl",
-              "regions": [
-                [1, 34, "D"],
-                [48, 54, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "jronn",
-              "regions": [
-                [1, 21, "D"],
-                [82, 98, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "seg",
-              "regions": [
-                [8, 23, "D"],
-                [551, 574, "D"],
-                ...
-              ]
-            },
-            {
-              "method": "pfilt",
-              "regions": [
-                [1094, 1109, "D"],
-                [1245, 1256, "D"],
-                ...
-              ]
-            }
-          ]
+    
+        "acc": "sp|Q15648|MED1_HUMAN",
+        "sequence": "MKAQASQAL...",
+        "length": 1581,
+        "prediction-disorder-mobidb_lite": {
+            "regions": [[609, 706], [792, 820], [874, 893], [947, 1566]],
+            "scores": [0.75, 0.75, 0.75, 0.875, 0.75, 0.875, ... ],
+            "content_count": 767, 
+            "content_fraction": 0.485
         },
-        "ss_populations": {
-          "predictors": [
-            {
-              "method": "fess",
-              "type": "helix",
-              "scores": [
-                0.004,
-                0.115,
-                0.18,
-                ...
-                0.233,
-                0.083,
-                0.003
-              ]
-            },
-            {
-              "method": "fess",
-              "type": "sheet",
-              "scores": [
-                0.002,
-                0.065,
-                ...
-                0.418,
-                0.206,
-                0.002
-              ]
-            },
-            {
-              "method": "fess",
-              "type": "coil",
-              "scores": [
-                0.994,
-                0.82,
-                0.758,
-                ...
-                0.348,
-                0.71,
-                0.994
-              ]
-            },
-            {
-              "method": "dynamine",
-              "type": "coil",
-              "scores": [
-                0.304,
-                0.315,
-                0.334,
-                ...
-                0.216,
-                0.25,
-                0.257
-              ]
-            }
-          ]
-        },
-        "lips": {
-          "predictors": [
-            {
-              "method": "anchor",
-              "regions": [
-                [17, 24, "D"],
-                [61, 62, "D"],
-                ...
-              ]
-            }
-          ]
-        }
-      },
-      "length": 1581,
-      "accession": "sp|Q15648|MED1_HUMAN"
+        "prediction-disorder-th_50": {...},
+        "prediction-low_complexity-merge": {...},
+        "prediction-disorder-iupl": {...},
+        "prediction-disorder-iups": {...},
+        "prediction-disorder-espN": {...},
+        "prediction-disorder-espD": {...},
+        "prediction-disorder-espX": {...},
+        "prediction-disorder-glo": {...},
+        "prediction-disorder-dis465": {...},
+        "prediction-disorder-disHL": {...},
+        "prediction-disorder-vsl": {...},
+        "prediction-low_complexity-seg": {...},
+        "prediction-low_complexity-pfilt": {...},
+        "prediction-helix-fess": {...},
+        "prediction-sheet-fess": {...},
+        "prediction-coil-fess": {...},
+        "prediction-rigidity-dynamine": {...},
+        "prediction-lip-anchor": {...}
     }
+
 
 Option `caid` provides a very extended output, containing both scores and regions
 for each predictor, but it's restricted to disorder predictors plus DynaMine::

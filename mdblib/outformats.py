@@ -148,122 +148,6 @@ class ExtendedFormat(Formatter):
             return ""
 
 
-class Mobidb3Format(Formatter):
-    def __init__(self, _acc, _seq, _mdbl_consensus,
-                 _simple_consensus, _single_predictions, **kwargs):
-        self.seq = _seq
-        self.seqlen = len(self.seq)
-        self.mdbl_consensus = _mdbl_consensus
-        self.simple_consensus = _simple_consensus
-        self.single_predictions = _single_predictions
-        self.injecting_data = kwargs.get("injection")
-        super(Mobidb3Format, self).__init__(_acc, **kwargs)
-
-        if self.multi_accessions:
-            self.multiply_by_accession("accession")
-
-    def _get_output_obj(self):
-        out_obj = dict()
-
-        if self.injecting_data is not None:
-            out_obj.update(self.injecting_data)
-
-        out_obj.setdefault("sequence", self.seq)
-
-        # MobiDB-lite consensus
-        out_obj \
-            .setdefault('mobidb_consensus', dict()) \
-            .setdefault('disorder', dict()) \
-            .setdefault('predictors', list()) \
-            .append(
-            {'method': 'mobidb_lite',
-             'regions': self.mdbl_consensus.prediction.regions,
-             'scores': self.mdbl_consensus.prediction.scores,
-             'dc': reduce(
-                 lambda x, t:
-                 x + (t[1] - t[0] + 1),
-                 self.mdbl_consensus.prediction.regions, 0.0) / self.seqlen
-                 if self.mdbl_consensus.prediction.regions else 0.0})
-
-        # MobiDB-lite consensus sub regions
-        if self.mdbl_consensus.prediction.regions:
-            out_obj \
-                .setdefault('mobidb_consensus', dict()) \
-                .setdefault('disorder', dict()) \
-                .setdefault('predictors', list()) \
-                .append(
-                {'method': 'mobidb_lite_sub',
-                 'regions': self.mdbl_consensus.enriched_regions_tags
-                 })
-
-        # Simple consensus
-        out_obj.setdefault('mobidb_consensus', dict()) \
-            .setdefault('disorder', dict()) \
-            .setdefault('predictors', list()) \
-            .append(
-            {'method': 'simple',
-             'regions': self.simple_consensus.prediction.regions,
-             'dc': reduce(
-                 lambda x, t:
-                 x + (t[1] - t[0] + 1),
-                 self.simple_consensus.prediction.regions, 0.0) / self.seqlen
-                 if self.simple_consensus.prediction.regions else 0.0})
-
-        # Single predictions
-        for prediction in self.single_predictions:
-            if any(t in prediction.types for t in ['disorder', 'lowcomp']):
-                prediction.translate_states({1: 'D', 0: 'S'})
-                out_obj \
-                    .setdefault('mobidb_data', dict()) \
-                    .setdefault('disorder', dict()) \
-                    .setdefault('predictors', list()) \
-                    .append(
-                    {'method': prediction.method,
-                     'regions': prediction.to_regions(start_index=1, positivetag='D')})
-
-            if 'sspops' in prediction.types:
-                method, ptype = prediction.method.split('_')
-
-                out_obj \
-                    .setdefault('mobidb_data', dict()) \
-                    .setdefault('ss_populations', dict()) \
-                    .setdefault('predictors', list()) \
-                    .append(
-                    {'method': method,
-                     'type': ptype,
-                     'scores': prediction.scores})
-
-            if 'bindsite' in prediction.types:
-                prediction.translate_states({1: 'D', 0: 'S'})
-
-                out_obj \
-                    .setdefault('mobidb_data', dict()) \
-                    .setdefault('lips', dict()) \
-                    .setdefault('predictors', list()) \
-                    .append(
-                    {'method': prediction.method,
-                     'regions': prediction.to_regions(start_index=1, positivetag='D')})
-
-        if out_obj:
-            out_obj["length"] = self.seqlen
-
-            if re.search("^UPI[A-F0-9]{10}$", self.acc):
-                out_obj['uniparc'] = self.acc
-
-            else:
-                out_obj['accession'] = self.acc
-
-            self.isnone = False
-
-            return [out_obj]
-
-    def __repr__(self):
-        if self.output:
-            return '\n'.join(json.dumps(oobj) for oobj in self.output)
-        else:
-            return ""
-
-
 class Mobidb4Format(Formatter):
 
     feature_tag = {'PA': 'polyampholyte',  # PA
@@ -280,12 +164,13 @@ class Mobidb4Format(Formatter):
 
 
     def __init__(self, _acc, _seq, _mdbl_consensus,
-                 _simple_consensus, _single_predictions, **kwargs):
+                 _simple_consensus, _lowcomp_consensus, _single_predictions, **kwargs):
         self.seq = _seq
         self.seqlen = len(self.seq)
         self.mdbl_consensus = _mdbl_consensus
         self.simple_consensus = _simple_consensus
         self.single_predictions = _single_predictions
+        self.lowcomplexity_consensus = _lowcomp_consensus
         self.injecting_data = kwargs.get("injection")
         super(Mobidb4Format, self).__init__(_acc, **kwargs)
 
@@ -301,16 +186,24 @@ class Mobidb4Format(Formatter):
         out_obj.setdefault("sequence", self.seq)
 
         # MobiDB-lite consensus
-        # TODO eliminate regions if empty?
         count = self.content_count(self.mdbl_consensus.prediction.regions)
-        out_obj["prediction-disorder-mobidb_lite"] = {
-             'regions': [(r[0], r[1]) for r in self.mdbl_consensus.prediction.regions],
-             'scores': self.mdbl_consensus.prediction.scores,
-             'content_count': count,
-             'content_fraction': count / self.seqlen
-        }
+        if count:
+            out_obj["prediction-disorder-mobidb_lite"] = {
+                 'regions': [(r[0], r[1]) for r in self.mdbl_consensus.prediction.regions],
+                 'scores': self.mdbl_consensus.prediction.scores,
+                 'content_count': count,
+                 'content_fraction': round(count / self.seqlen, 3)
+            }
+        else:
+            out_obj["prediction-disorder-mobidb_lite"] = {
+                'scores': self.mdbl_consensus.prediction.scores
+            }
 
         # MobiDB-lite consensus sub regions
+        # TODO check:
+        #  proline_rich
+        #  polar
+        #  cystein_rich ???
         if self.mdbl_consensus.prediction.regions:
 
             regions = {}
@@ -323,47 +216,61 @@ class Mobidb4Format(Formatter):
                 out_obj["prediction-{}-mobidb_lite_sub".format(r_type)] = {
                     'regions': regions[r_type],
                     'content_count': count,
-                    'content_fraction': count / self.seqlen
+                    'content_fraction': round(count / self.seqlen, 3)
                 }
 
         # Simple consensus
-        count = self.content_count(self.simple_consensus.prediction.regions)
-        out_obj["prediction-disorder-th_50"] = {
-            'regions': [(r[0], r[1]) for r in self.simple_consensus.prediction.regions],
-            'content_count': count,
-            'content_fraction': count / self.seqlen
-        }
+        if self.simple_consensus.prediction.regions:
+            count = self.content_count(self.simple_consensus.prediction.regions)
+            out_obj["prediction-disorder-th_50"] = {
+                'regions': [(r[0], r[1]) for r in self.simple_consensus.prediction.regions],
+                'content_count': count,
+                'content_fraction': round(count / self.seqlen, 3)
+            }
+
+        if self.lowcomplexity_consensus.prediction.regions:
+            count = self.content_count(self.lowcomplexity_consensus.prediction.regions)
+            out_obj["prediction-low_complexity-merge"] = {
+                'regions': [(r[0], r[1]) for r in self.lowcomplexity_consensus.prediction.regions],
+                'content_count': count,
+                'content_fraction': round(count / self.seqlen, 3)
+            }
 
         # Single predictions
         for prediction in self.single_predictions:
             regions = [(r[0], r[1]) for r in prediction.to_regions(start_index=1, positivetag=1)]
             count = self.content_count(regions)
 
-            if 'disorder' in prediction.types:
-                out_obj["prediction-disorder-{}".format(prediction.method)] = {
-                    'regions': regions,
-                    'content_count': count,
-                    'content_fraction': count / self.seqlen
+            if regions:
+                if 'disorder' in prediction.types:
+                    out_obj["prediction-disorder-{}".format(prediction.method)] = {
+                        'regions': regions,
+                        'content_count': count,
+                        'content_fraction': round(count / self.seqlen, 3)
+                    }
+                elif 'lowcomp' in prediction.types:
+                    out_obj["prediction-low_complexity-{}".format(prediction.method)] = {
+                        'regions': regions,
+                        'content_count': count,
+                        'content_fraction': round(count / self.seqlen, 3)
+                    }
+                elif 'bindsite' in prediction.types:
+                    out_obj["prediction-lip-{}".format(prediction.method)] = {
+                        'regions': regions,
+                        'content_count': count,
+                        'content_fraction': round(count / self.seqlen, 3)
+                    }
+
+            if 'rigidity' in prediction.types:
+                out_obj["prediction-rigidity-{}".format(prediction.method)] = {
+                     'scores': prediction.scores
                 }
-            elif 'lowcomp' in prediction.types:
-                out_obj["prediction-low_complexity-{}".format(prediction.method)] = {
-                    'regions': regions,
-                    'content_count': count,
-                    'content_fraction': count / self.seqlen
-                }
-            elif 'bindsite' in prediction.types:
-                out_obj["prediction-lip-anchor"] = {
-                    'regions': regions,
-                    'content_count': count,
-                    'content_fraction': count / self.seqlen
-                }
-            elif 'sspops' in prediction.types:
+
+            if 'sspops' in prediction.types:
                 method, ptype = prediction.method.split('_')
-                out_obj["prediction-{}-fess".format(ptype)] = {
+                out_obj["prediction-{}-{}".format(ptype, method)] = {
                     'scores': prediction.scores
                 }
-            # else:
-            #     logging.debug("Type not implemented in mobidb4".format(prediction.types))
 
         if out_obj:
             out_obj["length"] = self.seqlen

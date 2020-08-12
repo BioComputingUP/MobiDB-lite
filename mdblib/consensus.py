@@ -81,7 +81,6 @@ class Consensus(object):
                 logging.debug('%s | agreement: excluded', prediction.method)
 
 
-
         if included_predictors != 0:
             self.summed_states = agreement
             agreement = [summed_states / included_predictors for summed_states in agreement]
@@ -102,6 +101,17 @@ class SimpleConsensus(Consensus):
         self.calc_agreement(seq, threshold, ptype='disorder', force_consensus=force)
         self.prediction.translate_states({1: 'D', 0: 'S'}, join_tr='')
         self.prediction.regions = self.prediction.to_regions(start_index=1, positivetag='D')
+
+
+class MergeConsensus(Consensus):
+    """
+    Define a consensus merging all regions (e.g. for low complexity)
+    """
+    def __init__(self, prediction_stack, seq, threshold=0.1, ptype='disorder', force=True):
+        logging.debug('Generating Simple consensus')
+        super(MergeConsensus, self).__init__(prediction_stack)
+        self.calc_agreement(seq, threshold, ptype=ptype, force_consensus=force)
+        self.prediction.regions = self.prediction.to_regions(start_index=1, positivetag=1)
 
 
 class MobidbLiteConsensus(Consensus):

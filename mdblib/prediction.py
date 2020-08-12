@@ -38,36 +38,3 @@ class Prediction(States):
         """
         return [tags[0] if score >= self.threshold else tags[1] for score in self.scores]
 
-    # def regions_to_set(self):
-    #     """Get list of ID amino-acids positions from region list
-    #
-    #     :return: Unique amino-acid index of ID regions
-    #     :rtype: set
-    #     """
-    #     positions = set()
-    #     for start, end, _ in self.to_regions():
-    #         positions.update(range(start, end + 1))
-    #     return positions
-    #
-    # def regions_to_states(self, length, tags=('D', 'S'), reg_startindex=1):
-    #     """Represent ID states as a string from a list ID regions
-    #
-    #     :param length: Length of the protein sequence (num of amino-acids)
-    #     :type length: int
-    #     :param tags: couple of values: positive match tag, negative match tag. Order counts
-    #     :type tags: tuple
-    #     :param reg_startindex: start index of the input regions (default: 1)
-    #     :type reg_startindex: int
-    #     :return: Order/Disorder states of the amino-acids of a protein
-    #     :rtype: str
-    #     """
-    #     states = ""
-    #     positions = [pos - reg_startindex for pos in self.regions_to_set()]
-    #
-    #     for i in range(0, length):
-    #         if i in positions:
-    #             states += tags[0]
-    #         else:
-    #             states += tags[1]
-    #
-    #     return states

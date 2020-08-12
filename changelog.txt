@@ -246,3 +246,6 @@ Rename -f 0 --> 'interpro'
 Rename -f 1 --> 'extended'
 Rename -f 2 --> 'mobidb3'
 Rename -f 3 --> 'caid'
+
+3.8.3 | 12/08/2020
+Replace mobidb3 with mobidb4 format

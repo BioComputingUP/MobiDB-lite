@@ -32,8 +32,8 @@ import mdblib.logger as logger
 from mdblib.protein import Protein
 from mdblib.setdirs import set_pred_dir
 from mdblib.streams import OutStream, InStream
-from mdblib.consensus import MobidbLiteConsensus, SimpleConsensus, feature_desc
-from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb3Format, Mobidb4Format, CaidFormat, FastaFormat, VerticalFormat
+from mdblib.consensus import MobidbLiteConsensus, MergeConsensus, SimpleConsensus, feature_desc
+from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb4Format, CaidFormat, FastaFormat, VerticalFormat
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -50,7 +50,6 @@ class MobidbLite(object):
                  'fasta': 'main',
                  'vertical': 'main',
                  'extended': 'main',
-                 'mobidb3': 'mobidb3',
                  'mobidb4': 'mobidb4',
                  'caid': 'caid'}
 
@@ -88,9 +87,9 @@ class MobidbLite(object):
         Consume generator produced by MobidbLite.run() and stream output to selected output-stream.
         Output-stream is selected by user at MobidbLite instantiation time (stdout by default).
         """
-        for prot, s_cons, r_cons, m_cons in self.preds:
+        for prot, s_cons, r_cons, m_cons, l_cons in self.preds:
             outobj = self.fmt_output(prot.acc, prot.uniprot_acc, prot.seq, prot.preds,
-                                     s_cons=s_cons, r_cons=r_cons, m_cons=m_cons)
+                                     s_cons=s_cons, r_cons=r_cons, m_cons=m_cons, l_cons=l_cons)
             if outobj.isnone is False:
                 self.outstream.write('{}\n'.format(outobj))
 
@@ -106,10 +105,13 @@ class MobidbLite(object):
     def parse_json(self):
         for line in self.instream:
             doc = json.loads(line)
-            acc, seq = doc["accession"], doc["sequence"]
+            acc = doc.get("acc")
+            seq = doc["sequence"]
+
             # remove field accession to prevent overwriting of existing accession field when injecting in output
-            del doc["accession"]
+            # del doc["accession"]
             # del doc["sequence"]
+
             self.additional_data = doc
             yield acc, seq
 
@@ -144,7 +146,7 @@ class MobidbLite(object):
                 "Unrecognized input-filename extension: '{}'. Expected one of {}".format(self.infname.split(".")[-1],
                                                                                          fasta_extensions | json_extensions))
 
-    def fmt_output(self, acc, uacc, seq, preds, s_cons, r_cons, m_cons):
+    def fmt_output(self, acc, uacc, seq, preds, s_cons, r_cons, m_cons, l_cons):
         output = None
         multi_acc = None
 
@@ -169,12 +171,8 @@ class MobidbLite(object):
         elif self.outfmt == 'extended':
             output = ExtendedFormat(acc, m_cons, r_cons, _multi_accs=multi_acc)
 
-        elif self.outfmt == 'mobidb3':
-            output = Mobidb3Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
-                                   injection=self.additional_data)
-
         elif self.outfmt == 'mobidb4':
-            output = Mobidb4Format(acc, seq, m_cons, s_cons, preds, _multi_accs=multi_acc,
+            output = Mobidb4Format(acc, seq, m_cons, s_cons, l_cons, preds, _multi_accs=multi_acc,
                                    injection=self.additional_data)
 
         elif self.outfmt == 'caid':
@@ -185,17 +183,19 @@ class MobidbLite(object):
     def calc_consensus(self, predictions, sequence):
         simple_c = None
         relaxed_c = None
+        lowcomp_merge_c = None
         mobidblite_c = MobidbLiteConsensus(predictions, sequence,
-                                           pappu=True if self.outfmt in ['mobidb3', 'mobidb4'] else False,
+                                           pappu=True if self.outfmt in ['mobidb4'] else False,
                                            force=self.force_consensus)
 
         if self.outfmt == 'extended':
             relaxed_c = SimpleConsensus(predictions, sequence, force=self.force_consensus, threshold=.375)
 
-        if self.outfmt in ['mobidb3', 'mobidb4']:
+        if self.outfmt in ['mobidb4']:
             simple_c = SimpleConsensus(predictions, sequence, force=self.force_consensus)
+            lowcomp_merge_c = MergeConsensus(predictions, sequence, threshold=0.1, ptype='lowcomp', force=True)
 
-        return simple_c, relaxed_c, mobidblite_c
+        return simple_c, relaxed_c, mobidblite_c, lowcomp_merge_c
 
     def run(self, fasta, architecture, threads, outfile):
 
@@ -218,8 +218,8 @@ class MobidbLite(object):
                         processes=threads)
 
                     if predictions:
-                        smp_consensus, rlx_consensus, mdbl_consensus = self.calc_consensus(predictions, sequence)
-                        yield protein, smp_consensus, rlx_consensus, mdbl_consensus
+                        smp_consensus, rlx_consensus, mdbl_consensus, lowcomp_consensus = self.calc_consensus(predictions, sequence)
+                        yield protein, smp_consensus, rlx_consensus, mdbl_consensus, lowcomp_consensus
 
 
 if __name__ == "__main__":

@@ -420,8 +420,8 @@ class FESS(Predictor):
 
 
 class DynaMine(Predictor):
-    tag = 'dynamine_coil'
-    types = ['sspops']
+    tag = 'dynamine'
+    types = ['rigidity']
     groups = ['mobidb3', 'mobidb4', 'caid']
     intype = 'fasta'
     shared_name = 'dynamine'
