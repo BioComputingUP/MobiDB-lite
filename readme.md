@@ -4,6 +4,8 @@ Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto
 
 Version 3.8.4
 
+Docker container: [https://github.com/BioComputingUP/MobiDB-lite_docker](https://github.com/BioComputingUP/MobiDB-lite_docker)
+
 Introduction
 ------------
 MobiDB-lite executes up to 9 different disorder predictors, collects the outputs
