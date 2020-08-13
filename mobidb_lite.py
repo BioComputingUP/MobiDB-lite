@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MobiDB-lite, 3.8.2, Jul 2020
+MobiDB-lite, 3.8.4, Aug 2020
 
 By Marco Necci, Damiano Piovesan & Silvio C.E. Tosatto
 BiocomputingUP lab, Padua, Italy
@@ -33,7 +33,7 @@ from mdblib.protein import Protein
 from mdblib.setdirs import set_pred_dir
 from mdblib.streams import OutStream, InStream
 from mdblib.consensus import MobidbLiteConsensus, MergeConsensus, SimpleConsensus, feature_desc
-from mdblib.outformats import InterProFormat, ExtendedFormat, Mobidb4Format, CaidFormat, FastaFormat, VerticalFormat
+from mdblib.outformats import InterProFormat, Mobidb4Format, CaidFormat, FastaFormat
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -48,10 +48,8 @@ class MobidbLite(object):
     """
     outgroups = {'interpro': 'main',
                  'fasta': 'main',
-                 'vertical': 'main',
-                 'extended': 'main',
                  'mobidb4': 'mobidb4',
-                 'caid': 'caid'}
+                 'caid': 'mobidb4'}
 
     def __init__(self, fasta, launchdir=None, conf=None, architecture='64', threads=0, outfile=None,
                  outfmt='interpro', skip_features=False, outmult_by='acc=', outmultsep=',',
@@ -165,18 +163,12 @@ class MobidbLite(object):
         if self.outfmt == 'fasta':
             output = FastaFormat(acc, m_cons, _features=self.skip_features, feature_desc=feature_desc)
 
-        if self.outfmt == 'vertical':
-            output = VerticalFormat(acc, seq, m_cons, _features=self.skip_features, feature_desc=feature_desc)
-
-        elif self.outfmt == 'extended':
-            output = ExtendedFormat(acc, m_cons, r_cons, _multi_accs=multi_acc)
-
-        elif self.outfmt == 'mobidb4':
+        if self.outfmt == 'mobidb4':
             output = Mobidb4Format(acc, seq, m_cons, s_cons, l_cons, preds, _multi_accs=multi_acc,
                                    injection=self.additional_data)
 
-        elif self.outfmt == 'caid':
-            output = CaidFormat(acc, seq, m_cons, preds, _multi_accs=multi_acc)
+        if self.outfmt == 'caid':
+            output = CaidFormat(acc, seq, m_cons, preds)
 
         return output
 

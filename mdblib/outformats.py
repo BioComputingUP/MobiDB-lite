@@ -81,87 +81,19 @@ class FastaFormat(Formatter):
                     for reg in e['eregions']:
                         if reg[2] != 'D':
                             c[reg[0]-1: reg[1]] = [self.feature_desc[reg[2]]] * (reg[1] - reg[0] + 1)
-                    output.append("{}\n{}".format(e['accession'], ''.join(c)))
+                    output.append(">{}\n{}".format(e['accession'], ''.join(c)))
                 output = '\n'.join(output)
             else:
-                output = '\n'.join(["{}\n{}".format(o['accession'], o['consensus']) for o in self.output])
+                output = '\n'.join([">{}\n{}".format(o['accession'], o['consensus']) for o in self.output])
             return output
-        else:
-            return ""
-
-
-class VerticalFormat(Formatter):
-    def __init__(self, _acc, _seq, _mdbl_consensus, _features=False, feature_desc=None):
-        self.sequence = _seq
-        self.skip_features = _features
-        self.mdbl_consensus = _mdbl_consensus
-        self.feature_desc = {v: k for k, v in feature_desc.items()}
-        super(VerticalFormat, self).__init__(_acc)
-
-    def _get_output_obj(self):
-        if self.mdbl_consensus.prediction.regions:
-            out_obj = {
-                "accession": self.acc,
-                "sequence": self.sequence,
-                "consensus": self.mdbl_consensus.prediction.states,
-                "scores": self.mdbl_consensus.agreement,
-                "eregions": self.mdbl_consensus.enriched_regions if self.skip_features is False else None
-            }
-            self.isnone = False
-            return [out_obj]
-
-    def __repr__(self):
-        if self.output:
-            return '\n'.join(['>{}\n{}'.format(
-                o['accession'],
-                '\n'.join(['{}\t{}\t{}'.format(*z) for z in zip(o['sequence'], o['scores'], o['consensus'])])
-            ) for o in self.output])
-
-        else:
-            return ""
-
-
-class ExtendedFormat(Formatter):
-    def __init__(self, _acc, _mdbl_consensus, rlx_consensus, **kwargs):
-        self.mdbl_consensus = _mdbl_consensus
-        self.rlx_consensus = rlx_consensus
-        super(ExtendedFormat, self).__init__(_acc, **kwargs)
-
-        if self.multi_accessions:
-            self.multiply_by_accession("accession")
-
-    def _get_output_obj(self):
-        if self.mdbl_consensus.prediction.regions:
-            out_obj = {
-                "accession": self.acc,
-                "consensus": self.mdbl_consensus.prediction.states,
-                "rlx_consensus": self.rlx_consensus.prediction.states,
-                "regions": self.mdbl_consensus.prediction.regions
-            }
-            self.isnone = False
-            return [out_obj]
-
-    def __repr__(self):
-        if self.output:
-            return '\n'.join(json.dumps(oobj) for oobj in self.output)
         else:
             return ""
 
 
 class Mobidb4Format(Formatter):
 
-    feature_tag = {'PA': 'polyampholyte',  # PA
-                   'PPE': 'positive_polyelectrolyte',  # PPE
-                   'NPE': 'negative_polyelectrolyte',  # NPE
-                   'CR': 'cystein_rich',  # CR
-                   'PR': 'proline_rich',  # PR
-                   'PO': 'polar',  # PO
-                   'GR': 'glycine_rich',  # GR
-                   'LC': 'low_complexity'}  # LC
-
     def content_count(self, regions):
         return reduce(lambda x, t: x + (t[1] - t[0] + 1), regions, 0)
-
 
     def __init__(self, _acc, _seq, _mdbl_consensus,
                  _simple_consensus, _lowcomp_consensus, _single_predictions, **kwargs):
@@ -185,39 +117,25 @@ class Mobidb4Format(Formatter):
 
         out_obj.setdefault("sequence", self.seq)
 
-        # MobiDB-lite consensus
-        count = self.content_count(self.mdbl_consensus.prediction.regions)
-        if count:
-            out_obj["prediction-disorder-mobidb_lite"] = {
-                 'regions': [(r[0], r[1]) for r in self.mdbl_consensus.prediction.regions],
-                 'scores': self.mdbl_consensus.prediction.scores,
-                 'content_count': count,
-                 'content_fraction': round(count / self.seqlen, 3)
-            }
-        else:
-            out_obj["prediction-disorder-mobidb_lite"] = {
-                'scores': self.mdbl_consensus.prediction.scores
-            }
-
-        # MobiDB-lite consensus sub regions
-        # TODO check:
-        #  proline_rich
-        #  polar
-        #  cystein_rich ???
-        if self.mdbl_consensus.prediction.regions:
+        # MobiDB-lite consensus and sub regions
+        if self.mdbl_consensus.enriched_regions:
 
             regions = {}
-            for r in self.mdbl_consensus.prediction.regions:
-                r_type = self.feature_tag.get(r[2][2:])
-                if r_type:
-                    regions.setdefault(r_type, []).append((r[0], r[1]))
+            for r in self.mdbl_consensus.enriched_regions:
+                r_type = "disorder" if r[2].startswith("D_") else r[2].replace("-", "_").replace(" ", "_").lower()
+                regions.setdefault(r_type, []).append((r[0], r[1]))
+
             for r_type in regions:
                 count = self.content_count(regions[r_type])
-                out_obj["prediction-{}-mobidb_lite_sub".format(r_type)] = {
+                obj_key = "prediction-{}-mobidb_lite{}".format(r_type, '_sub' if r_type != "disorder" else "")
+                out_obj[obj_key] = {
                     'regions': regions[r_type],
                     'content_count': count,
                     'content_fraction': round(count / self.seqlen, 3)
                 }
+                if obj_key == "prediction-disorder-mobidb_lite":
+                    out_obj[obj_key]["scores"] = self.mdbl_consensus.prediction.scores
+                # print(obj_key, out_obj[obj_key])
 
         # Simple consensus
         if self.simple_consensus.prediction.regions:
@@ -293,66 +211,40 @@ class Mobidb4Format(Formatter):
 
 class CaidFormat(Formatter):
     def __init__(self, _acc, seq, _mdbl_consensus, _single_predictions, **kwargs):
-        self.seq = seq
+        self.sequence = seq
         self.mdbl_consensus = _mdbl_consensus
         self.single_predictions = _single_predictions
         super(CaidFormat, self).__init__(_acc, **kwargs)
 
-        if self.multi_accessions:
-            self.multiply_by_accession("accession")
-
     def _get_output_obj(self):
-        out_obj = dict()
-
-        out_obj \
-            .setdefault('predictions', list()) \
-            .append(
-            {'method': 'mobidb_lite',
-             'regions': self.mdbl_consensus.prediction.regions,
-             'scores': self.mdbl_consensus.prediction.scores})
-
+        out_objs = list()
+        if self.mdbl_consensus.prediction:
+            self.mdbl_consensus.prediction.translate_states({'D': 1, 'S': 0})
+            out_objs.append({
+                "method": "mobidb_lite",
+                "accession": self.acc,
+                "sequence": self.sequence,
+                "consensus": self.mdbl_consensus.prediction.states,
+                "scores": self.mdbl_consensus.agreement
+            })
+            self.isnone = False
         for prediction in self.single_predictions:
-            if 'disorder' in prediction.types:
-                prediction.translate_states({1: 'D', 0: 'S'})
-
-                out_obj \
-                    .setdefault('predictions', list()) \
-                    .append(
-                    {'method': prediction.method,
-                     'regions': prediction.to_regions(start_index=1, positivetag='D'),
-                     'scores': prediction.scores})
-
-            if 'sspops' in prediction.types:
-                method, _ = prediction.method.split('_')
-
-                out_obj \
-                    .setdefault('predictions', list()) \
-                    .append(
-                    {'method': method,
-                     'regions': prediction.to_regions(start_index=1,
-                                                      positivetag=1,
-                                                      translate_states={1: 'D', 0: 'S'}),
-                     'scores': prediction.scores})
-
-            if 'bindsite' in prediction.types:
-                prediction.translate_states({1: 'D', 0: 'S'})
-
-                out_obj \
-                    .setdefault('predictions', list()) \
-                    .append(
-                    {'method': prediction.method,
-                     'regions': prediction.to_regions(start_index=1, positivetag='D'),
-                     'scores': prediction.scores})
-
-        # if out_obj:
-        out_obj['accession'] = self.acc
-        out_obj['sequence'] = self.seq
-
-        self.isnone = False
-        return [out_obj]
+            out_objs.append({
+                "method": prediction.method,
+                "accession": self.acc,
+                "sequence": self.sequence,
+                "consensus": prediction.states,
+                "scores": prediction.scores
+            })
+            self.isnone = False
+        return out_objs
 
     def __repr__(self):
         if self.output:
-            return '\n'.join(json.dumps(oobj) for oobj in self.output)
+            return '\n'.join(['>{}\t{}\n{}'.format(
+                o['accession'], o['method'],
+                '\n'.join(['{}\t{}\t{}\t{}'.format(i + 1, *z) for i, z in enumerate(zip(o['sequence'], o['scores'], o['consensus']))])
+            ) for o in self.output])
+
         else:
             return ""

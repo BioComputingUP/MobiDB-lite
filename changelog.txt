@@ -249,3 +249,7 @@ Rename -f 3 --> 'caid'
 
 3.8.3 | 12/08/2020
 Replace mobidb3 with mobidb4 format
+
+3.8.4 | 13/08/2020
+Fix caid and mobidb4 output format
+Remove vertical and extended output formats

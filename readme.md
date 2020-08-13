@@ -2,7 +2,7 @@ MobiDB-lite, long disorder consensus predictor
 ==============================================
 Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto  
 
-Version 3.8.3
+Version 3.8.4
 
 Introduction
 ------------
@@ -28,7 +28,7 @@ The following command prints the help page on screen::
 
 By default, MobiDB-lite searches the ``binx/`` folder (that includes predictors
 executables) in its own directory. So, MobiDB-lite can be executed by just
-providing a multi-fasta input::
+providing a multi-fasta input:
 
     python3 mobidb_lite.py /examples/multi.fasta
 
@@ -36,7 +36,7 @@ MobiDB-lite is able to use predictors executables from other paths. See **Config
 section for further details.
 
 By default, MobiDB-lite runs on single thread but it can exploits up to 7 threads.
-When less than 7 CPUs are available, the "-t" option allows to calibrate the load::
+When less than 7 CPUs are available, the "-t" option allows to calibrate the load:
 
     python3 mobidb_lite.py examples/multi.fasta -t 4
 
@@ -70,16 +70,16 @@ Output
 ------
 
 The output is printed on screen by default. To save it on a file the "-o"
-option has to be used::
+option has to be used:
 
     python3 mobidb_lite.py examples/multi.fasta -o out_file.txt
 
 
 The output is provided in 3 different formats. The output format can be chosen
 with the ``-f`` option, which accepts one of the following values: `interpro`. 
-`fasta`, `vertical`, `extended`, `mobidb4`, `caid`. The default short version 
+`fasta`, `caid`, `mobidb4`. The default short version 
 (option `interpro`) includes the protein name and start/end position of the
-disorder regions, one region per line. All elements are separated by a TAB::
+disorder regions, one region per line. All elements are separated by a TAB:
 
     sp|Q15648|MED1_HUMAN	609	706
     sp|Q15648|MED1_HUMAN	652	681	Polar
@@ -100,7 +100,7 @@ disorder regions, one region per line. All elements are separated by a TAB::
 
 
 Sequence features can be silenced by using option -sf, inactive by
-default. When using this option, sequence features are skipped::
+default. When using this option, sequence features are skipped:
 
     sp|Q15648|MED1_HUMAN	609	706
     sp|Q15648|MED1_HUMAN	792	820
@@ -110,11 +110,10 @@ default. When using this option, sequence features are skipped::
 
 Option `fasta` gives the output in fasta format (new in version 3.8.2).
 In this format `D` is disorder, `S` is structure and region subtypes are 
-given as figures from 1 to 8::
+given as figures from 1 to 8:
     
-    sp|Q15648|MED1_HUMAN
-    SSS...
-    SSSSSSSSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    >sp|Q15648|MED1_HUMAN
+    SSS...SSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
     D888888888888888888888888888888DDDDDDDDDDDDDDDDDDD
     DDDDDDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
     SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDD
@@ -129,11 +128,10 @@ given as figures from 1 to 8::
     DDD...
 
 Sequence features can be silenced by using option -sf, inactive by
-default. When using this option, sequence features are expressed as `D`::
+default. When using this option, sequence features are expressed as `D`:
 
-    sp|QDDDDD|MEDD_HUMAN
-    SSS...
-    SSSSSSSSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
+    >sp|QDDDDD|MEDD_HUMAN
+    SSS...SSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
     DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
     DDDDDDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
     SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSDDDDDDDDD
@@ -148,33 +146,25 @@ default. When using this option, sequence features are expressed as `D`::
     DDD...
 
 
-Option `vertical` gives the output with one residue per line (new in version 3.8.2).
-In this format each line will will have three values: `res  score  state`. Where `res`
+Option `caid` gives the output with one residue per line (new in version 3.8.4).
+In this format each line will will have four values: `pos res  score  state`. Where 
+`pos` is the residue position in the sequence (starting from 1), `res`
 is the amino acid one letter code, `score` is the agreement score of the consensus, 
-`state` if the predictor decision between order (`S`) and disorder (`D`) ::
+`state` if the predictor decision between order (`0`) and disorder (`1`):
 
-Option `extended` provides InterPro extended output (only MobiDB-lite prediction, skip
-fully structured proteins). Contains the binary MobiDB-lite prediction and
-the IDRs boundaries. Also contains a relaxed consensus (rlx_consensus) calculated
-at a threshold of .375 (New in version 3.8.1) ::
-
-    {
-      "accession": "sp|Q15648|MED1_HUMAN",
-      "consensus": "SSS...SSS",
-      "rlx_consensus": "DDD...DDD",
-      "regions": [
-        [609, 706, "D"],
-        [792, 820, "D"],
-        [874, 893, "D"],
-        [947, 1566, "D"]
-      ]
-    }
+    >sp|Q15648|MED1_HUMAN   mobidb_lite
+    1       M       0.75    0
+    2       K       0.75    0
+    ...     ...     ...     ...
+    16      M       0.49    0
+    17      S       0.571   1
+    18      S       0.635   1
 
 
 Option `mobidb4` provides an extended output and structured output that is used
-to create annotations for MobiDB4 entries::
-    {
+to create annotations for MobiDB4 entries:
     
+    {
         "acc": "sp|Q15648|MED1_HUMAN",
         "sequence": "MKAQASQAL...",
         "length": 1581,
@@ -204,24 +194,6 @@ to create annotations for MobiDB4 entries::
         "prediction-lip-anchor": {...}
     }
 
-
-Option `caid` provides a very extended output, containing both scores and regions
-for each predictor, but it's restricted to disorder predictors plus DynaMine::
-
-    {
-      "accession": "sp|P49137|MAPK2_HUMAN",
-      "predictions": [
-        {
-          "method": "mobidb_lite",
-          "scores": [0.875, 1.0, ...
-          ],
-          "regions": [
-            [1, 43, "D"]
-          ]
-        },
-        {...}
-      ]
-    }
 
 Troubleshooting
 ---------------

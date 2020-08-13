@@ -31,7 +31,7 @@ def arg_parser(cd):
                         help='log level filter. All levels <= choice will be displayed')
 
     parser.add_argument('-f', '--outputFormat', default='interpro',
-                        choices=['interpro', 'fasta', 'vertical', 'extended', 'mobidb3', 'mobidb4', 'caid'],
+                        choices=['interpro', 'fasta', 'mobidb4', 'caid'],
                         help='output format, see README.md for further details')
 
     parser.add_argument('-c', '--conf', type=str, default=os.path.join(cd, 'config.ini'),
