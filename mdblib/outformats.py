@@ -118,8 +118,7 @@ class Mobidb4Format(Formatter):
         out_obj.setdefault("sequence", self.seq)
 
         # MobiDB-lite consensus and sub regions
-        if self.mdbl_consensus.enriched_regions:
-
+        if self.mdbl_consensus.prediction.regions:
             regions = {}
             for r in self.mdbl_consensus.enriched_regions:
                 r_type = "disorder" if r[2].startswith("D_") else r[2].replace("-", "_").replace(" ", "_").lower()
