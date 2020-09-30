@@ -13,6 +13,7 @@ class Prediction(States):
         self.threshold = threshold
         self.types = types
         self.include_in_mobidblite = include_in_mobidblite
+        self.valid = None
 
         super(Prediction, self).__init__(self.scores_to_states())
 
@@ -20,14 +21,15 @@ class Prediction(States):
         return "Prediction(method='{}', thr={}, scores=[{}..])".format(
             self.method, self.threshold, ' '.join(map(str, self.scores[:5])))
 
-    def has_correct_length(self, seq, force=False):
-        if (force is False and len(self.scores) == len(seq)) or force is True:
-            return True
+    def has_correct_length(self, seq):
+        if len(self.scores) == len(seq):
+            self.valid = True
         else:
-            logging.debug(
+            logging.warning(
                 'length difference | %s | len: %i pred: %s | %s',
                 self.method, len(seq), len(self.scores), seq)
-            return False
+            self.valid = False
+        return self.valid
 
     def scores_to_states(self, tags=(1, 0)):
         """

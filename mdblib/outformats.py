@@ -134,7 +134,6 @@ class Mobidb4Format(Formatter):
                 }
                 if obj_key == "prediction-disorder-mobidb_lite":
                     out_obj[obj_key]["scores"] = self.mdbl_consensus.prediction.scores
-                # print(obj_key, out_obj[obj_key])
 
         # Simple consensus
         if self.simple_consensus.prediction.regions:
@@ -155,39 +154,40 @@ class Mobidb4Format(Formatter):
 
         # Single predictions
         for prediction in self.single_predictions:
-            regions = [(r[0], r[1]) for r in prediction.to_regions(start_index=1, positivetag=1)]
-            count = self.content_count(regions)
+            if prediction.valid is True:
+                regions = [(r[0], r[1]) for r in prediction.to_regions(start_index=1, positivetag=1)]
+                count = self.content_count(regions)
 
-            if regions:
-                if 'disorder' in prediction.types:
-                    out_obj["prediction-disorder-{}".format(prediction.method)] = {
-                        'regions': regions,
-                        'content_count': count,
-                        'content_fraction': round(count / self.seqlen, 3)
-                    }
-                elif 'lowcomp' in prediction.types:
-                    out_obj["prediction-low_complexity-{}".format(prediction.method)] = {
-                        'regions': regions,
-                        'content_count': count,
-                        'content_fraction': round(count / self.seqlen, 3)
-                    }
-                elif 'bindsite' in prediction.types:
-                    out_obj["prediction-lip-{}".format(prediction.method)] = {
-                        'regions': regions,
-                        'content_count': count,
-                        'content_fraction': round(count / self.seqlen, 3)
+                if regions:
+                    if 'disorder' in prediction.types:
+                        out_obj["prediction-disorder-{}".format(prediction.method)] = {
+                            'regions': regions,
+                            'content_count': count,
+                            'content_fraction': round(count / self.seqlen, 3)
+                        }
+                    elif 'lowcomp' in prediction.types:
+                        out_obj["prediction-low_complexity-{}".format(prediction.method)] = {
+                            'regions': regions,
+                            'content_count': count,
+                            'content_fraction': round(count / self.seqlen, 3)
+                        }
+                    elif 'bindsite' in prediction.types:
+                        out_obj["prediction-lip-{}".format(prediction.method)] = {
+                            'regions': regions,
+                            'content_count': count,
+                            'content_fraction': round(count / self.seqlen, 3)
+                        }
+
+                if 'rigidity' in prediction.types:
+                    out_obj["prediction-rigidity-{}".format(prediction.method)] = {
+                         'scores': prediction.scores
                     }
 
-            if 'rigidity' in prediction.types:
-                out_obj["prediction-rigidity-{}".format(prediction.method)] = {
-                     'scores': prediction.scores
-                }
-
-            if 'sspops' in prediction.types:
-                method, ptype = prediction.method.split('_')
-                out_obj["prediction-{}-{}".format(ptype, method)] = {
-                    'scores': prediction.scores
-                }
+                if 'sspops' in prediction.types:
+                    method, ptype = prediction.method.split('_')
+                    out_obj["prediction-{}-{}".format(ptype, method)] = {
+                        'scores': prediction.scores
+                    }
 
         if out_obj:
             out_obj["length"] = self.seqlen

@@ -253,3 +253,6 @@ Replace mobidb3 with mobidb4 format
 3.8.4 | 13/08/2020
 Fix caid and mobidb4 output format
 Remove vertical and extended output formats
+
+3.8.5 | 30/09/2020
+always exclude and log a warning a prediction with a length mismatch

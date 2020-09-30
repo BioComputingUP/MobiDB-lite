@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MobiDB-lite, 3.8.4, Aug 2020
+MobiDB-lite, 3.8.5, Aug 2020
 
 By Marco Necci, Damiano Piovesan & Silvio C.E. Tosatto
 BiocomputingUP lab, Padua, Italy
@@ -185,7 +185,7 @@ class MobidbLite(object):
 
         if self.outfmt in ['mobidb4']:
             simple_c = SimpleConsensus(predictions, sequence, force=self.force_consensus)
-            lowcomp_merge_c = MergeConsensus(predictions, sequence, threshold=0.1, ptype='lowcomp', force=True)
+            lowcomp_merge_c = MergeConsensus(predictions, sequence, threshold=0.1, ptype='lowcomp', force=self.force_consensus)
 
         return simple_c, relaxed_c, mobidblite_c, lowcomp_merge_c
 

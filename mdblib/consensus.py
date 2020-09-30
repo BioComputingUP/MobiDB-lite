@@ -51,7 +51,7 @@ class Consensus(object):
         return "Consensus(methods='{}', {})".format(
             ' '.join(p.method for p in self.predictions_stack), self.prediction)
 
-    def calc_agreement(self, seq, threshold, ptype=None, force_consensus=False):
+    def calc_agreement(self, seq, threshold, ptype=None):
         """
         Compute agreement from a stack of predictions
 
@@ -61,24 +61,20 @@ class Consensus(object):
         :type threshold: float
         :param ptype: prediction type to consider for agreement
         :type ptype: str
-        :param force_consensus: if True consensus computation is computed despite
-            single predictors errors
-        :type force_consensus: bool
         """
         agreement = [0.0] * len(seq)
         included_predictors = 0
 
         for prediction in self.predictions_stack:
 
-            if ptype is not None and ptype in prediction.types:
-                logging.debug('%s | agreement: included', prediction.method)
-
-                if prediction.has_correct_length(seq, force_consensus):
+            if ptype is not None and prediction.has_correct_length(seq):
+                if ptype in prediction.types:
+                    logging.debug('%s | agreement: included', prediction.method)
                     logging.debug('%s | length: OK (%i)', prediction.method, len(seq))
                     included_predictors += 1
                     agreement = map(sum, zip(agreement, prediction.states))
             else:
-                logging.debug('%s | agreement: excluded', prediction.method)
+                logging.warning('%s | agreement: excluded', prediction.method)
 
 
         if included_predictors != 0:
@@ -98,7 +94,7 @@ class SimpleConsensus(Consensus):
     def __init__(self, prediction_stack, seq, threshold=0.5, force=False):
         logging.debug('Generating Simple consensus')
         super(SimpleConsensus, self).__init__(prediction_stack)
-        self.calc_agreement(seq, threshold, ptype='disorder', force_consensus=force)
+        self.calc_agreement(seq, threshold, ptype='disorder')
         self.prediction.translate_states({1: 'D', 0: 'S'}, join_tr='')
         self.prediction.regions = self.prediction.to_regions(start_index=1, positivetag='D')
 
@@ -108,9 +104,9 @@ class MergeConsensus(Consensus):
     Define a consensus merging all regions (e.g. for low complexity)
     """
     def __init__(self, prediction_stack, seq, threshold=0.1, ptype='disorder', force=True):
-        logging.debug('Generating Simple consensus')
+        logging.debug('Generating Merge consensus')
         super(MergeConsensus, self).__init__(prediction_stack)
-        self.calc_agreement(seq, threshold, ptype=ptype, force_consensus=force)
+        self.calc_agreement(seq, threshold, ptype=ptype)
         self.prediction.regions = self.prediction.to_regions(start_index=1, positivetag=1)
 
 
@@ -124,7 +120,7 @@ class MobidbLiteConsensus(Consensus):
         super(MobidbLiteConsensus, self).__init__(prediction_stack)
         self.lencutoff = lencutoff
         self.seq = seq
-        self.calc_agreement(seq, threshold, ptype='mobidblite', force_consensus=force)
+        self.calc_agreement(seq, threshold, ptype='mobidblite')
         self.prediction.translate_states({1: 'D', 0: 'S'})
         self.prediction.math_morphology()
         self.prediction.merge_close_longidrs()
