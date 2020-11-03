@@ -256,3 +256,9 @@ Remove vertical and extended output formats
 
 3.8.5 | 30/09/2020
 always exclude and log a warning a prediction with a length mismatch
+
+3.9.0 | 03/11/2020
+Decrease window size for subregions from 15 to 9
+Decrease length threshold for subregions from 15 to 10
+Add new cli option to prevent subregion hierarchical merging (-pm)
+Add new cli option to report subregions outside of IDRs (-foi)

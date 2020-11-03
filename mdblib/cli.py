@@ -8,9 +8,8 @@ def arg_parser(cd):
     or launch ``mobidb_lite_old.py --help``
     """
 
-    parser = argparse.ArgumentParser(
-        prog='mobidb_lite.py', description="MobiDB-lite: long disorder consensus predictor",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(prog='mobidb_lite.py',
+                                     description="MobiDB-lite: long disorder consensus predictor")
 
     parser.add_argument(
         'fastaFile',
@@ -53,6 +52,9 @@ def arg_parser(cd):
 
     parser.add_argument('-sf', '--skipFeatures', action='store_true', default=False,
                         help='does not calculate sequence features within long IDRs')
+
+    parser.add_argument('-pm', '--preventFeatureMerging', action='store_true', default=False)
+    parser.add_argument('-foi', '--featuresOutsideIdr', action='store_true', default=False)
 
     args = parser.parse_args()
 

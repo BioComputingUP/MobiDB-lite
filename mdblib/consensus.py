@@ -91,7 +91,7 @@ class SimpleConsensus(Consensus):
     """
     Define a simple consensus based on an agreement threshold (default 0.5).
     """
-    def __init__(self, prediction_stack, seq, threshold=0.5, force=False):
+    def __init__(self, prediction_stack, seq, threshold=0.5):
         logging.debug('Generating Simple consensus')
         super(SimpleConsensus, self).__init__(prediction_stack)
         self.calc_agreement(seq, threshold, ptype='disorder')
@@ -103,7 +103,7 @@ class MergeConsensus(Consensus):
     """
     Define a consensus merging all regions (e.g. for low complexity)
     """
-    def __init__(self, prediction_stack, seq, threshold=0.1, ptype='disorder', force=True):
+    def __init__(self, prediction_stack, seq, threshold=0.1, ptype='disorder'):
         logging.debug('Generating Merge consensus')
         super(MergeConsensus, self).__init__(prediction_stack)
         self.calc_agreement(seq, threshold, ptype=ptype)
@@ -115,7 +115,7 @@ class MobidbLiteConsensus(Consensus):
     Define consensus featured by MobiDB-Lite as its prediction.
     """
     def __init__(self, prediction_stack, seq,
-                 threshold=0.625, lencutoff=20, pappu=False, force=False):
+                 threshold=0.625, lencutoff=20, pappu=False, merge_features=True, keep_features_outside_idr=True):
         logging.debug('Generating MobiDB Lite consensus')
         super(MobidbLiteConsensus, self).__init__(prediction_stack)
         self.lencutoff = lencutoff
@@ -128,7 +128,7 @@ class MobidbLiteConsensus(Consensus):
         self.prediction.regions = self.prediction.to_regions(start_index=1, positivetag='D',
                                                              len_thr=self.lencutoff)
         if self.prediction.regions:
-            self.enriched_regions = self.get_region_features()
+            self.enriched_regions = self.get_region_features(merge=merge_features, only_in_idr=not keep_features_outside_idr)
             self.enriched_regions_tags = [(r[0], r[1], 'D_' + feature_tag[r[2]]) for r in
                                           filter(lambda r: r[-1][:2] != 'D', self.enriched_regions)]
             if pappu is True:
@@ -146,21 +146,45 @@ class MobidbLiteConsensus(Consensus):
             pappu_class = self.prediction.get_disorder_class(region_sequence)
             region[-1] = '{}_{}'.format(status, pappu_class)
 
-    def get_region_features(self):
+    def get_region_features(self, window_size=9, feature_len_thr=10, merge=True, only_in_idr=True):
         """
         Look for sequence features within prediction.regions
 
         :return: prediction.regions extended with feature regions
         """
 
+        def get_subregions_in_range(feature_iterable, start=0, end=None):
+            subregions_in_range = []
+            # transform features to regions in the disordered-region-range
+            for feat_reg in States(feature_iterable[start: end]).to_regions(len_thr=feature_len_thr):
+                if feat_reg[-1] != '0':
+                    reg = [feat_reg[0] + start + 1, feat_reg[1] + start + 1, feature_desc[feat_reg[2]]]
+                    subregions_in_range.append(reg)
+            return subregions_in_range
+
+        def append_subregions_to_enriched_regions(feature_iterable):
+            # iterate over disordered regions
+            for region in self.prediction.regions:
+                start, end, _ = region
+                # enriched_regions.append(region)
+                if only_in_idr is True:
+                    enriched_regions.extend(get_subregions_in_range(feature_iterable, start - 1, end))
+
+            if only_in_idr is False:
+                enriched_regions.extend(get_subregions_in_range(feature_iterable))
+
+        if window_size % 2 == 0:
+            logging.warning('Window size must be an odd integer instead it was passed: {}, using {} instead'.format(window_size, window_size+1))
+            window_size += 1
+
         lc_regions = ''.join(map(str, next(p for p in self.predictions_stack if p.method == 'seg').states))
 
         features_raw = ['0'] * len(self.seq)
-        features_final = ['0'] * len(self.seq)
+        features_merged = ['0'] * len(self.seq)
         enriched_regions = []
 
         seq = States(self.seq)
-        for i, token in enumerate(seq.tokenize(n=7)):
+        for i, token in enumerate(seq.tokenize(n=window_size // 2 - 1)):
             token = States(token)
 
             pappu_class = token.get_disorder_class(token.states)
@@ -184,7 +208,8 @@ class MobidbLiteConsensus(Consensus):
             elif token.is_enriched(['S', 'T', 'N', 'Q']) is True:
                 features_raw[i] = '8'
 
-            logging.debug(features_raw)
+        # slice forces copy, otherwise this assignment results in infinite loop
+        enriched_regions = self.prediction.regions[:]
 
         # merge features hierarchically
         for feature_code in range(len(feature_desc), 0, -1):
@@ -195,18 +220,17 @@ class MobidbLiteConsensus(Consensus):
             f.make_binary(active=feature_code)
             f.math_morphology(rmax=5, tags=(feature_code, '0'))
 
-            # apply feature to seq positions
-            for i, e in enumerate(f.states):
-                if e == feature_code:
-                    features_final[i] = feature_code
+            if merge is True:
+                # apply feature to seq positions
+                for i, e in enumerate(f.states):
+                    if e == feature_code:
+                        features_merged[i] = feature_code
+            else:
+                # append features of each class without merging them
+                append_subregions_to_enriched_regions(f.states)
 
-        for region in self.prediction.regions:
-            start, end, _ = region
-            enriched_regions.append(region)
+        if merge is True:
+            # append merged features
+            append_subregions_to_enriched_regions(features_merged)
 
-            for feat_reg in States(features_final[start - 1: end]).to_regions(len_thr=15):
-                if feat_reg[-1] != '0':
-                    reg = [feat_reg[0] + start, feat_reg[1] + start, feature_desc[feat_reg[2]]]
-                    enriched_regions.append(reg)
-
-        return enriched_regions
+        return sorted(enriched_regions, key=lambda o: o[0])

@@ -2,7 +2,7 @@ MobiDB-lite, long disorder consensus predictor
 ==============================================
 Marco Necci, Damiano Piovesan and Silvio C.E. Tosatto  
 
-Version 3.8.5
+Version 3.9.0
 
 Docker container: [https://github.com/BioComputingUP/MobiDB-lite_docker](https://github.com/BioComputingUP/MobiDB-lite_docker)
 

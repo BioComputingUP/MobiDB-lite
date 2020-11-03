@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MobiDB-lite, 3.8.5, Aug 2020
+MobiDB-lite, 3.9.0, Nov 2020
 
 By Marco Necci, Damiano Piovesan & Silvio C.E. Tosatto
 BiocomputingUP lab, Padua, Italy
@@ -53,7 +53,9 @@ class MobidbLite(object):
 
     def __init__(self, fasta, launchdir=None, conf=None, architecture='64', threads=0, outfile=None,
                  outfmt='interpro', skip_features=False, outmult_by='acc=', outmultsep=',',
-                 parse_acc=False, force_consensus=False):
+                 parse_acc=False, force_consensus=False, merge_features=True, keep_features_outside_idr=True):
+
+        logging.debug('Merge features: {}'.format(merge_features))
 
         cd = launchdir if launchdir else os.path.dirname(os.path.realpath(__file__))
         cd = os.path.abspath(cd)
@@ -75,6 +77,8 @@ class MobidbLite(object):
         self.outmult_by = outmult_by
         self.outmultsep = outmultsep
         self.additional_data = None
+        self.merge_features = merge_features
+        self.keep_features_outside_idr = keep_features_outside_idr
 
         self.preds = self.run(fasta, architecture=architecture, threads=threads, outfile=outfile)
 
@@ -178,14 +182,15 @@ class MobidbLite(object):
         lowcomp_merge_c = None
         mobidblite_c = MobidbLiteConsensus(predictions, sequence,
                                            pappu=True if self.outfmt in ['mobidb4'] else False,
-                                           force=self.force_consensus)
+                                           merge_features=self.merge_features,
+                                           keep_features_outside_idr=self.keep_features_outside_idr)
 
         if self.outfmt == 'extended':
-            relaxed_c = SimpleConsensus(predictions, sequence, force=self.force_consensus, threshold=.375)
+            relaxed_c = SimpleConsensus(predictions, sequence, threshold=.375)
 
         if self.outfmt in ['mobidb4']:
-            simple_c = SimpleConsensus(predictions, sequence, force=self.force_consensus)
-            lowcomp_merge_c = MergeConsensus(predictions, sequence, threshold=0.1, ptype='lowcomp', force=self.force_consensus)
+            simple_c = SimpleConsensus(predictions, sequence)
+            lowcomp_merge_c = MergeConsensus(predictions, sequence, threshold=0.1, ptype='lowcomp')
 
         return simple_c, relaxed_c, mobidblite_c, lowcomp_merge_c
 
@@ -233,4 +238,6 @@ if __name__ == "__main__":
                outmultsep=cli_args.multiplySeparator,
                outmult_by=cli_args.multiplyOutputBy,
                parse_acc=cli_args.parseAccession,
-               force_consensus=cli_args.forceConsensus).stream()
+               force_consensus=cli_args.forceConsensus,
+               merge_features=not cli_args.preventFeatureMerging,
+               keep_features_outside_idr=cli_args.featuresOutsideIdr).stream()
