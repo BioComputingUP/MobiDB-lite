@@ -262,3 +262,6 @@ Decrease window size for subregions from 15 to 9
 Decrease length threshold for subregions from 15 to 10
 Add new cli option to prevent subregion hierarchical merging (-pm)
 Add new cli option to report subregions outside of IDRs (-foi)
+
+3.10.0 | 25/10/2021
+Fix crashing when SEG gives output of wrong length (ex. A0A120MI02)

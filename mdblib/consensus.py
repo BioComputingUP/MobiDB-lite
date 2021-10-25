@@ -76,7 +76,6 @@ class Consensus(object):
             else:
                 logging.warning('%s | agreement: excluded', prediction.method)
 
-
         if included_predictors != 0:
             self.summed_states = agreement
             agreement = [summed_states / included_predictors for summed_states in agreement]
@@ -202,7 +201,7 @@ class MobidbLiteConsensus(Consensus):
             elif token.is_enriched(['G']) is True:
                 features_raw[i] = '6'
 
-            elif lc_regions[i] == '1':
+            elif len(lc_regions) == len(seq.states) and lc_regions[i] == '1':
                 features_raw[i] = '7'
 
             elif token.is_enriched(['S', 'T', 'N', 'Q']) is True:
@@ -234,3 +233,4 @@ class MobidbLiteConsensus(Consensus):
             append_subregions_to_enriched_regions(features_merged)
 
         return sorted(enriched_regions, key=lambda o: o[0])
+
