@@ -1,0 +1,18 @@
+#1-14 subclasses
+[FILVW]...[FAILVW]..[FAILVW].....[FILVW]	CaM_1-5-8-14
+[RK][RK][RK][FILVW]......[FAILVW].....[FILVW]	CaM_Basic_1-8-14
+[FILVW]......[FAILVW].....[FILVW]	CaM_1-8-14
+[FILVW]............[FILVW]	CaM_1-14
+
+#1-10 subclasses
+...[FILVW]....[FAILVW]....[FILVW]	CaM_1-5-10
+[RK][RK][RK][FAILVW]....[FILV]....[FILVW]	CaM_Basic 1-5-10
+[FILVW]........[FILVW]	CaM_1-10
+
+#1-16 motif
+[FILVW]..............[FILVW]	CaM_1-16
+
+#IQ subcalsses
+[FILV]Q...[RK]G...[RK]..[FILVWY]	CaM_IQ
+[FILV]Q...[RK]........	CaM_IQ-like
+

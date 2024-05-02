@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "idrpred"
+version = "1.0.0"
+description = "A consensus-based predictor of intrinsically disordered regions in proteins."
+readme = "README.md"
+license = {file = "LICENSE.md", 'content-type' = 'text/markdown'}
+authors = [
+  {name = "Matthias Blum", email = "mblum@ebi.ac.uk", affiliation = "European Bioinformatics Institute"},
+  {name = "Damiano Piovesan", email = "damiano.piovesan@unipd.it", orcid = "0000-0001-8210-2390", affiliation = "University of Padua"}
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[project.scripts]
+mobidb_lite = "mobidb_lite.__main__:main"
+
+

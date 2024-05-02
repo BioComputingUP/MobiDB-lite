@@ -1,0 +1,116 @@
+                       ANCHOR RELEASE NOTES
+                       ====================
+
+ANCHOR Version 1.0
+by Balint Meszaros, Istvan Simon and Zsuzsanna Dosztanyi
+
+
+Please see the LICENSE file for the license terms for the software. 
+
+THE PUBLICATION OF RESEARCH USING ANCHOR MUST INCLUDE AN APPROPRIATE
+CITATION TO THE METHOD:
+
+
+ Meszaros B, Simon I, Dosztanyi Z (2009) 
+ Prediction of Protein Binding Regions in Disordered Proteins. 
+ PLoS Comput Biol 5(5): e1000376. doi:10.1371/journal.pcbi.1000376 
+  
+
+*******************************************************************************
+To be able to use ANCHOR, you need to compile the C program.
+
+TO COMPILE: 
+
+cc anchor.c -o anchor -lm -O2
+
+or simply type 
+
+make
+
+
+TO RUN ANCHOR AS C PROGRAM:
+
+anchor seqfile options
+  
+  where seqfile is the name of the sequence file
+  optional parameters:  
+  -v         : produce a more detailed profile output
+  -d datadir : location of anchordata file
+
+To be able to run outside the program directory, the directory of the anchordata
+file can be specified with the -d option. Alternatively, the ANCHOR_PATH 
+environment variable has to be set to the location of the data file. 
+
+
+INPUT FILE: sequence_file in fasta format. One sequence per file.
+
+EXAMPLE RUN: 
+
+anchor p27.seq -d ./
+
+
+TO RUN ANCHOR AS A PERL PROGRAM:
+
+We also provide a perl wrapper to run ANCHOR. Complementing the prediction of
+disordered binding regions, this perl program can carry out simple motif
+searches. Without the motif search, the output of the perl script and the C
+program should be identitical.
+
+perl anchor.pl seqfile options
+
+  where seqfile is the name of the sequence file
+  optional parameters:  
+  -v         : produce a more detailed profile output
+  -d datadir : location of anchordata and anchor program file
+  -m motifs  : file describing the motifs. 
+
+
+MOTIF SEARCH: 
+
+The motifs should be in a separate file. The format is: 
+
+motif [name]
+
+where name is optional. There should be only one motif per line. For example:
+
+F...W..[LIV]  MDM2
+[RK].L.{0,1}[FYLIVMP]	CYCLIN_1
+[PA][^P][^FYWIL]S[^P] USP7_1
+
+
+
+A complete list of current ELM motifs taken from the ELM server (http://elm.eu.org/)
+can be found in the file "motifs_elm.txt" converted into this format. Calmodulin
+binding motifs taken from the Calmodulin Target Database
+(http://calcium.uhnres.utoronto.ca/ctdb/) are also provided in the "CaM_motifs.txt"
+file. Other motifs can also be specified. For example a motif to find proline-rich
+regions can be:
+
+P+.?P{2,}.?P+     Poly-Proline
+
+EXAMPLE RUN: 
+
+perl anchor.pl p27.seq -m motifs_example.txt > p27.out
+
+FILTERING
+
+Currently there are two filtering criteria. Short regions with length below 6
+residues and regions with an average IUPred score below 0.1 are filtered out.
+This criteria decreases false positive rate on globular proteins, and eliminates
+most transmembrane protein segments. The filtered regions are listed separatetly.
+
+OUTPUT
+
+The ouput includes the list of predicted and filtered binding regions (if any),
+and the prediction profile.  If motif search was selected, the perl wrapper
+output also returns the location of the found motifs. The prediction profile
+gives back the probability score that indicates the likelihood of the residue to
+be part of a disordered binding region along each position in the sequence.
+Regions that have a score above 0.5 and pass the filtering criteria are
+predicted as disordered binding regions and are marked by 1, 0 otherwise.
+
+If the -v option was specificed, additional columns are returned in the
+prediction profile. These include the IUPred probability score calculated by
+IUPred, a general disorder prediction method, the ANCHOR score from which the
+ANCHOR probability was calculated, and the three scores underlying ANCHOR
+predictions (see the original article for more details).
