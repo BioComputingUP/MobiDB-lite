@@ -1,9 +1,10 @@
+import json
 import os
 import sys
 from argparse import ArgumentParser, FileType
 from tempfile import gettempdir
 
-from mobidb_lite.consensus import run
+from mobidb_lite.consensus import run, content_count, _FEATURES
 
 
 def main():
@@ -19,6 +20,8 @@ def main():
     parser.add_argument("outfile", nargs="?", default="-",
                         type=FileType("wt", encoding="UTF-8"),
                         help="Write the output of infile to outfile.")
+    parser.add_argument("--format", type=str, default='interpro',
+                        help=f"Output format", choices=('interpro', 'mobidb')),
     parser.add_argument("--force", action="store_true", default=False,
                         help="Generate consensus as long as at least "
                              "one predictor did not fail.")
@@ -40,7 +43,7 @@ def main():
     bindir = os.path.join(root, "bin")
 
     with args.outfile as outfile:
-        for seq_id, regions in run(args.infile, bindir, args.threads,
+        for seq_id, regions, scores in run(args.infile, bindir, args.threads,
                                    force=args.force,
                                    round=args.round,
                                    seg=args.run_seg,
@@ -49,9 +52,25 @@ def main():
                 sys.stderr.write(f"error in {seq_id}\n")
                 continue
 
-            for start, end, feature in regions:
-                outfile.write(f"{seq_id}\t{start}\t{end}\t{feature}\n")
+            seq_len = len(scores["espritz-d"])  # A method that is always run
 
+            if args.format == "interpro":
+                for feature, region in regions.items():
+                    if feature in _FEATURES:
+                        for start, end in region:
+                            outfile.write(f"{seq_id}\t{start}\t{end}\t{feature}\n")
+                    elif feature == "mobidblite":
+                        for start, end in region:
+                            outfile.write(f"{seq_id}\t{start}\t{end}\t-\n")
+            elif args.format == "mobidb":
+                obj = {"acc": seq_id}
+                for feature, region in regions.items():
+                    cont_count = content_count(region)
+                    cont_fraction = round(cont_count / seq_len, 3)
+                    obj[feature] = {"regions": region, "content_count": cont_count, "content_fraction": cont_fraction}
+                    if feature == "mobidblite":
+                        obj[feature]["scores"] = scores[feature]
+                outfile.write(json.dumps(obj) + "\n")
 
 if __name__ == "__main__":
     main()
