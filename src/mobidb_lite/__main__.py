@@ -52,7 +52,7 @@ def main():
                 sys.stderr.write(f"error in {seq_id}\n")
                 continue
 
-            seq_len = len(scores["espritz-d"])  # A method that is always run
+            seq_len = len(list(scores.values())[0])  # A random method
 
             if args.format == "interpro":
                 for feature, region in regions.items():
@@ -63,7 +63,7 @@ def main():
                         for start, end in region:
                             outfile.write(f"{seq_id}\t{start}\t{end}\t-\n")
             elif args.format == "mobidb":
-                obj = {"acc": seq_id}
+                obj = {"acc": seq_id, "length": seq_len}
                 for feature, region in regions.items():
                     cont_count = content_count(region)
                     cont_fraction = round(cont_count / seq_len, 3)
