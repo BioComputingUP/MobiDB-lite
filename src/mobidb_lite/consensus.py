@@ -143,7 +143,7 @@ def run(file: str, bindir: str, threads: int, **kwargs):
 
             for f in as_completed(fs):
                 seq_id = fs[f]
-                regions = f.result()
+                regions, scores = f.result()
                 yield seq_id, regions, scores
     else:
         for seq_id, sequence in parse_fasta(file):
@@ -226,7 +226,10 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
             continue
 
         # Regions
-        regions = get_regions(pred_state, min_length=20)
+        if pred_name == "mobidblite":
+            regions = get_regions(pred_state, min_length=20)
+        else:
+            regions = get_regions(pred_state, min_length=1)
         for start, end, _ in sorted(regions):
             results.setdefault(pred_name, []).append((start + 1, end + 1))
 

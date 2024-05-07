@@ -4,7 +4,7 @@ import sys
 from argparse import ArgumentParser, FileType
 from tempfile import gettempdir
 
-from mobidb_lite.consensus import run, content_count, _FEATURES
+from mobidb_lite.consensus import run, content_count, _FEATURES, _MOBIDB_NAMES
 
 
 def main():
@@ -64,13 +64,15 @@ def main():
                             outfile.write(f"{seq_id}\t{start}\t{end}\t-\n")
             elif args.format == "mobidb":
                 obj = {"acc": seq_id, "length": seq_len}
+                # print(seq_id)
                 for feature, region in regions.items():
                     cont_count = content_count(region)
                     cont_fraction = round(cont_count / seq_len, 3)
-                    obj[feature] = {"regions": region, "content_count": cont_count, "content_fraction": cont_fraction}
+                    obj[_MOBIDB_NAMES[feature]] = {"regions": region, "content_count": cont_count, "content_fraction": cont_fraction}
                     if feature == "mobidblite":
-                        obj[feature]["scores"] = scores[feature]
+                        obj[_MOBIDB_NAMES[feature]]["scores"] = scores[feature]
                 outfile.write(json.dumps(obj) + "\n")
+
 
 if __name__ == "__main__":
     main()
