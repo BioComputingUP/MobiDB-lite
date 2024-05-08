@@ -288,7 +288,7 @@ def merge_long_disordered_regions(states: str) -> str:
         states = new_states
 
 
-def _repl_struct_by_disord(match: re.Match):
+def _repl_struct_by_disord(match: re.match):
     return _POSITIVE_FLAG * len(match.group(0))
 
 
