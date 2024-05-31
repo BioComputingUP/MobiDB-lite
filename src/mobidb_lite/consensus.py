@@ -69,7 +69,9 @@ _FEATURES = [
     "Proline-rich",
     "Glycine-rich",
     "Low complexity",
-    "Polar"
+    "Polar",
+    "Extended",
+    "Compact"
 ]
 
 
@@ -196,9 +198,9 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
                 agreement[i] += state
 
     if num_indicators == 0:
-        return None
+        return None, None
     elif num_indicators < len(scores) and not force_consensus:
-        return None
+        return None, None
 
     # Consensus states
     states = ""
@@ -221,6 +223,7 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
         else:
             states_majority += _NEGATIVE_FLAG
 
+
     # Majority consensus
     scores_states["majority"] = states_majority
 
@@ -234,6 +237,7 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     scores_states["mobidblite"] = states
 
     results = {}
+
     for pred_name, pred_state in scores_states.items():
         if pred_state is None or len(pred_state) != seq_length:
             sys.stderr.write(f"{sequence_id}: {pred_name} excluded\n")

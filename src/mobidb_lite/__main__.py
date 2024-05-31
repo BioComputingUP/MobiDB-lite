@@ -57,6 +57,7 @@ def main():
                     elif feature == "mobidblite":
                         for start, end in region:
                             outfile.write(f"{seq_id}\t{start}\t{end}\t-\n")
+
             elif args.format == "mobidb":
                 obj = {"acc": seq_id, "length": seq_len}
                 # print(seq_id)
