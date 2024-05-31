@@ -74,6 +74,7 @@ _FEATURES = [
     "Compact"
 ]
 
+_VALID_AA = re.compile('[^RDNEKHQSCGTAMYVWLIPF]')
 
 def parse_fasta(file):
     seq_id = sequence = ""
@@ -261,9 +262,11 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
                     results.setdefault(state, []).append((start + 1 + i, start + 1 + j))
 
             # Nu parameters
-            if pred_name == "mobidblite" and model_nu and 30 <= (end - start + 1) <= 1500:
+            seq = _VALID_AA.sub('', sequence[start:end + 1])  # Remove non-standard AA from the sequence fragment
+            if pred_name == "mobidblite" and model_nu and 30 <= len(seq) <= 1500:
+
                 # calculate sequence features
-                scd, shd, kappa, fcr, mean_lambda = nu_svr.calc_seq_properties(sequence[start:end + 1])
+                scd, shd, kappa, fcr, mean_lambda = nu_svr.calc_seq_properties(seq)
                 # calculate scaling exponent
                 nu = model_nu.predict([[scd, shd, kappa, fcr, mean_lambda]])[0]
 
