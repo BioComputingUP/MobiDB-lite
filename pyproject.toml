@@ -12,8 +12,8 @@ authors = [
   {name = "Matthias Blum", email = "mblum@ebi.ac.uk", affiliation = "European Bioinformatics Institute"},
   {name = "Damiano Piovesan", email = "damiano.piovesan@unipd.it", orcid = "0000-0001-8210-2390", affiliation = "University of Padua"}
 ]
-requires-python = ">=3.8"
-dependencies = []
+requires-python = ">=3.12.3"
+dependencies = ["scikit-learn>=1.4.2", "numba>=0.59.1", "numpy>=1.26.4"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

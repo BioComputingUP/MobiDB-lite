@@ -9,6 +9,11 @@ from functools import reduce
 
 from mobidb_lite import disembl, espritz, globplot, iupred, seg, anchor
 
+try:
+    from mobidb_lite import nu_svr
+except ImportError:
+    pass
+
 
 _THRESHOLDS = {
     "mobidblite": 0.625,
@@ -44,11 +49,13 @@ _MOBIDB_NAMES = {
     "Proline-rich": "prediction-proline_rich-mobidb_lite_sub",
     "Glycine-rich": "prediction-glycine_rich-mobidb_lite_sub",
     "Low complexity": "prediction-low_complexity-mobidb_lite_sub",
-    "Polar": "prediction-polar-mobidb_lite_sub"
+    "Polar": "prediction-polar-mobidb_lite_sub",
+    "Extended": "prediction-extended-mobidb_lite_sub",
+    "Compact": "prediction-compact-mobidb_lite_sub"
 }
 
-
-_CONSENSUS = frozenset(["disembl-hl", "disembl-rem465", "espritz-d", "espritz-n", "espritz-x", "globplot", "iupred-l", "iupred-s"])
+_CONSENSUS = frozenset(
+    ["disembl-hl", "disembl-rem465", "espritz-d", "espritz-n", "espritz-x", "globplot", "iupred-l", "iupred-s"])
 
 _POSITIVE_FLAG = "1"
 _NEGATIVE_FLAG = "0"
@@ -103,7 +110,7 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
                "globplot": globplot.run(os.path.join(bindir, "TISEAN"), sequence),
                "iupred-l": iupred.run_long(os.path.join(bindir, "IUPred"), sequence),
                "iupred-s": iupred.run_short(os.path.join(bindir, "IUPred"), sequence)}
-               # "fess": fess.run_fess(os.path.join(bindir, "FeSS"), disbin)}
+    # "fess": fess.run_fess(os.path.join(bindir, "FeSS"), disbin)}
 
     os.unlink(disbin)
 
@@ -124,13 +131,19 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
     return results, states
 
 
-def run(file: str, bindir: str, threads: int, **kwargs):
+def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
+
+    # Import model nu data
+    calc_nu = kwargs.get("nu", False)
+    if calc_nu:
+        model_nu = nu_svr.load(os.path.join(datadir, "svr_model_nu_2.joblib"))
+        kwargs["model_nu"] = model_nu
+
     if threads > 1:
         with ThreadPoolExecutor(max_workers=threads) as executor:
             fs = {}
             for seq_id, sequence in parse_fasta(file):
-                f = executor.submit(predict, seq_id, sequence, bindir,
-                                    **kwargs)
+                f = executor.submit(predict, seq_id, sequence, bindir, **kwargs)
                 fs[f] = seq_id
 
                 if len(fs) == 1000:
@@ -157,13 +170,14 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     run_seg = kwargs.get("seg", True)
     tempdir = kwargs.get("tempdir")
     threshold = kwargs.get("threshold", _THRESHOLDS["mobidblite"])
+    model_nu = kwargs.get("model_nu", None)
 
     seq_length = len(sequence)
     scores, scores_states = run_predictors(sequence, bindir, seg=run_seg, tempdir=tempdir)
 
     # Sub-regions
     if len(sequence) == len(scores_states["seg"]):
-        features = get_region_features(sequence, scores_states["seg"])
+        features = get_region_features(sequence, scores_states["seg"], model_nu)
     else:
         features = None
 
@@ -230,6 +244,7 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
             regions = get_regions(pred_state, min_length=20)
         else:
             regions = get_regions(pred_state, min_length=1)
+
         for start, end, _ in sorted(regions):
             results.setdefault(pred_name, []).append((start + 1, end + 1))
 
@@ -240,6 +255,18 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
                 for i, j, state in get_regions(region, min_length=10):
                     # state = _FEATURES[int(x)-1]
                     results.setdefault(state, []).append((start + 1 + i, start + 1 + j))
+
+            # Nu parameters
+            if pred_name == "mobidblite" and model_nu and 30 <= (end - start + 1) <= 1500:
+                # calculate sequence features
+                scd, shd, kappa, fcr, mean_lambda = nu_svr.calc_seq_properties(sequence[start:end + 1])
+                # calculate scaling exponent
+                nu = model_nu.predict([[scd, shd, kappa, fcr, mean_lambda]])[0]
+
+                if nu < 0.45:
+                    results.setdefault("Extended", []).append((start, end + 1))
+                elif nu > 0.55:
+                    results.setdefault("Compact", []).append((start, end + 1))
 
     return results, scores
 
@@ -317,7 +344,7 @@ def get_regions(states: Union[list, str], min_length: int) -> list:
     return regions
 
 
-def get_region_features(sequence: str, seg_states: list) -> list:
+def get_region_features(sequence: str, seg_states: list, model_nu: any) -> list:
 
     all_features = {}
     for state in _FEATURES:
@@ -362,10 +389,10 @@ def get_region_features(sequence: str, seg_states: list) -> list:
                 raise ValueError(f"{seq}: {f_plus}, {f_minus}")
         else:
             # Weak polyampholyte/polyelectrolyte
-            cycstein = proline = glycine = polar = 0
+            cysteine = proline = glycine = polar = 0
             for aa in seq:
                 if aa == "C":
-                    cycstein += 1
+                    cysteine += 1
                 elif aa == "P":
                     proline += 1
                 elif aa == "G":
@@ -373,7 +400,7 @@ def get_region_features(sequence: str, seg_states: list) -> list:
                 elif aa in {"N", "Q", "S", "T"}:
                     polar += 1
 
-            if cycstein / len(seq) >= 0.32:
+            if cysteine / len(seq) >= 0.32:
                 state = "Cysteine-rich"
             elif proline / len(seq) >= 0.32:
                 state = "Proline-rich"
