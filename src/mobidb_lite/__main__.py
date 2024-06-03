@@ -64,9 +64,11 @@ def main():
                 for feature, region in regions.items():
                     cont_count = content_count(region)
                     cont_fraction = round(cont_count / seq_len, 3)
-                    obj[_MOBIDB_NAMES[feature]] = {"regions": region, "content_count": cont_count, "content_fraction": cont_fraction}
+                    obj[_MOBIDB_NAMES[feature]] = {"regions": region[:2], "content_count": cont_count, "content_fraction": cont_fraction}
                     if feature == "mobidblite":
                         obj[_MOBIDB_NAMES[feature]]["scores"] = scores[feature]
+                    if feature in ["Compact", "Extended"]:
+                        obj[_MOBIDB_NAMES[feature]]["nu"] = region[2]
                 outfile.write(json.dumps(obj) + "\n")
 
 

@@ -270,10 +270,11 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
                 # calculate scaling exponent
                 nu = model_nu.predict([[scd, shd, kappa, fcr, mean_lambda]])[0]
 
-                if nu < 0.45:
-                    results.setdefault("Extended", []).append((start, end + 1))
+                #  "compact" se nu <= 0.475 e "extended" se nu > 0.55
+                if nu <= 0.475:
+                    results.setdefault("Compact", []).append((start, end + 1, nu))
                 elif nu > 0.55:
-                    results.setdefault("Compact", []).append((start, end + 1))
+                    results.setdefault("Extended", []).append((start, end + 1, nu))
 
     return results, scores
 
