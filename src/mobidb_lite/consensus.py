@@ -272,9 +272,9 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
 
                 #  "compact" se nu <= 0.475 e "extended" se nu > 0.55
                 if nu <= 0.475:
-                    results.setdefault("Compact", []).append((start, end + 1, nu))
+                    results.setdefault("Compact", []).append((start + 1, end + 1, nu))
                 elif nu > 0.55:
-                    results.setdefault("Extended", []).append((start, end + 1, nu))
+                    results.setdefault("Extended", []).append((start + 1, end + 1, nu))
 
     return results, scores
 
