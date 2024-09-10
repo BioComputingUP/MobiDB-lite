@@ -3,8 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "idrpred"
-version = "1.0.0"
+name = "MobiDB-lite"
+version = "4.0.0"
 description = "A consensus-based predictor of intrinsically disordered regions in proteins."
 readme = "README.md"
 license = {file = "LICENSE.md", 'content-type' = 'text/markdown'}
