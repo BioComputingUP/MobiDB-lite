@@ -1,3 +1,0 @@
-F...W..[LIV]  MDM2
-[RK].L.{0,1}[FYLIVMP]	CYCLIN_1
-[PA][^P][^FYWIL]S[^P] USP7_1
