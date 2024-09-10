@@ -21,7 +21,7 @@ def main():
     parser.add_argument("--force", action="store_true", default=False,
                         help="Generate consensus as long as at least one predictor did not fail.")
     parser.add_argument("--extra", dest="run_extra", action="store_true", default=False,
-                        help="Run extra features (SEG, ANCHOR, ensemble properties compact/extended")
+                        help="Run extra features (ANCHOR, ensemble properties compact/extended")
     parser.add_argument("--round", action="store_true", default=False,
                         help="Round scores before threshold checks, like MobiDB-lite.")
     parser.add_argument("--tempdir", metavar="DIRECTORY", default=gettempdir(),
