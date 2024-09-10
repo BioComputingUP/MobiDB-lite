@@ -12,6 +12,7 @@ from mobidb_lite import disembl, espritz, globplot, iupred, seg, anchor
 try:
     from mobidb_lite import nu_svr
 except ImportError:
+    print("Nu svr module not loaded")
     pass
 
 
@@ -95,7 +96,7 @@ def parse_fasta(file):
 
 def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
     tempdir = kwargs.get("tempdir")
-    run_seg = kwargs.get("seg", True)
+    run_extra = kwargs.get("extra", False)
     round_score = kwargs.get("round", False)
 
     fd, disbin = mkstemp(dir=tempdir)
@@ -117,15 +118,17 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
 
     os.unlink(disbin)
 
-    if run_seg:
-        fd, fasta = mkstemp(dir=tempdir)
-        with open(fd, "wt") as fh:
-            fh.write(f">1\n{sequence}\n")
 
-        results["seg"] = seg.run(os.path.join(bindir, "SEG"), fasta)
-        results['anchor'] = anchor.run_anchor(os.path.join(bindir, "ANCHOR"), fasta)
+    fd, fasta = mkstemp(dir=tempdir)
+    with open(fd, "wt") as fh:
+        fh.write(f">1\n{sequence}\n")
 
-        os.unlink(fasta)
+    results["seg"] = seg.run(os.path.join(bindir, "SEG"), fasta)
+
+    if run_extra:
+            results['anchor'] = anchor.run_anchor(os.path.join(bindir, "ANCHOR"), fasta)
+
+    os.unlink(fasta)
 
     states = {}
     for k in results:
@@ -136,9 +139,8 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
 
 def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
 
-    # Import model nu data
-    calc_nu = kwargs.get("nu", False)
-    if calc_nu:
+    # Import model nu data fro compact/extended calculation
+    if kwargs.get("extra", False):
         model_nu = nu_svr.load(os.path.join(datadir, "svr_model_nu_2.joblib"))
         kwargs["model_nu"] = model_nu
 
@@ -170,17 +172,17 @@ def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
 def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     force_consensus = kwargs.get("force", False)
     round_score = kwargs.get("round", False)
-    run_seg = kwargs.get("seg", True)
+    run_extra = kwargs.get("run_extra", False)
     tempdir = kwargs.get("tempdir")
     threshold = kwargs.get("threshold", _THRESHOLDS["mobidblite"])
     model_nu = kwargs.get("model_nu", None)
 
     seq_length = len(sequence)
-    scores, scores_states = run_predictors(sequence, bindir, seg=run_seg, tempdir=tempdir)
+    scores, scores_states = run_predictors(sequence, bindir, extra=run_extra, tempdir=tempdir)
 
     # Sub-regions
     if len(sequence) == len(scores_states["seg"]):
-        features = get_region_features(sequence, scores_states["seg"], model_nu)
+        features = get_region_features(sequence, scores_states["seg"])
     else:
         features = None
 
@@ -272,9 +274,9 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
 
                 #  "compact" se nu <= 0.475 e "extended" se nu > 0.55
                 if nu <= 0.475:
-                    results.setdefault("Compact", []).append((start, end + 1, nu))
+                    results.setdefault("Compact", []).append((start + 1, end + 1, nu))
                 elif nu > 0.55:
-                    results.setdefault("Extended", []).append((start, end + 1, nu))
+                    results.setdefault("Extended", []).append((start + 1, end + 1, nu))
 
     return results, scores
 
@@ -352,7 +354,7 @@ def get_regions(states: Union[list, str], min_length: int) -> list:
     return regions
 
 
-def get_region_features(sequence: str, seg_states: list, model_nu: any) -> list:
+def get_region_features(sequence: str, seg_states: list) -> list:
 
     all_features = {}
     for state in _FEATURES:

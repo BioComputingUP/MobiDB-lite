@@ -20,10 +20,8 @@ def main():
                         help=f"Output format", choices=('interpro', 'mobidb')),
     parser.add_argument("--force", action="store_true", default=False,
                         help="Generate consensus as long as at least one predictor did not fail.")
-    parser.add_argument("--no-seg", dest="run_seg", action="store_false", default=True,
-                        help="Do not indentify domains of low complexity with SEG.")
-    parser.add_argument("--nu", dest="calc_nu", action="store_true", default=False,
-                        help="Calculate region compactness.")
+    parser.add_argument("--extra", dest="run_extra", action="store_true", default=False,
+                        help="Run extra features (SEG, ANCHOR, ensemble properties compact/extended")
     parser.add_argument("--round", action="store_true", default=False,
                         help="Round scores before threshold checks, like MobiDB-lite.")
     parser.add_argument("--tempdir", metavar="DIRECTORY", default=gettempdir(),
@@ -40,8 +38,7 @@ def main():
         for seq_id, regions, scores in run(args.infile, bindir, datadir, args.threads,
                                    force=args.force,
                                    round=args.round,
-                                   seg=args.run_seg,
-                                   nu=args.calc_nu,
+                                   extra=args.run_extra,
                                    tempdir=args.tempdir):
             if regions is None:
                 sys.stderr.write(f"error in {seq_id}\n")
