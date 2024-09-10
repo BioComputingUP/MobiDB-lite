@@ -161,3 +161,5 @@ cython_debug/
 
 /src/mobidb_lite/bin/FeSS
 /src/mobidb_lite/bin/ANCHOR/
+src/mobidb_lite/bin/ANCHOR/
+src/mobidb_lite/bin/FeSS
