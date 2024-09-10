@@ -12,7 +12,6 @@ from mobidb_lite import disembl, espritz, globplot, iupred, seg, anchor
 try:
     from mobidb_lite import nu_svr
 except ImportError:
-    print("Nu svr module not loaded")
     pass
 
 
