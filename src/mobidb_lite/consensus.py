@@ -200,8 +200,12 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
                 agreement[i] += state
 
     if num_indicators == 0:
+        # All methods crashed
+        sys.stderr.write(f"{sequence_id}: all methods failed\n")
         return None, None
-    elif num_indicators < len(scores) and not force_consensus:
+    elif num_indicators < len(_CONSENSUS) and not force_consensus:
+        # Some methods crashed and --force is not selected
+        sys.stderr.write(f"{sequence_id}: some methods failed and --force parameters has not been selected\n")
         return None, None
 
     # Consensus states
