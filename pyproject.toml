@@ -9,8 +9,9 @@ description = "A consensus-based predictor of intrinsically disordered regions i
 readme = "README.md"
 license = {file = "LICENSE.md", 'content-type' = 'text/markdown'}
 authors = [
-  {name = "Matthias Blum", email = "mblum@ebi.ac.uk", affiliation = "European Bioinformatics Institute"},
-  {name = "Damiano Piovesan", email = "damiano.piovesan@unipd.it", orcid = "0000-0001-8210-2390", affiliation = "University of Padua"}
+  {name = "Matthias Blum", email = "mblum@ebi.ac.uk"},
+  {name = "Damiano Piovesan", email = "damiano.piovesan@unipd.it"},
+  {name = "Mahta Mehdiabadi", email = "mahta.mehdiabadi@studenti.unipd.it"}
 ]
 requires-python = ">=3.12.3"
 dependencies = []
