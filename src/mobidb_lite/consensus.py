@@ -9,11 +9,11 @@ from functools import reduce
 
 from mobidb_lite import disembl, espritz, globplot, iupred, seg, anchor
 
-try:
-    from mobidb_lite import nu_svr
-except ImportError:
-    pass
 
+from mobidb_lite import nu_svr
+
+
+import time ## debug
 
 _THRESHOLDS = {
     "mobidblite": 0.625,
@@ -164,7 +164,11 @@ def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
                 yield seq_id, regions, scores
     else:
         for seq_id, sequence in parse_fasta(file):
+            start_time = time.time() ## debug
             regions, scores = predict(seq_id, sequence, bindir, **kwargs)
+            end_time = time.time() ## debug
+            elapsed_time = end_time - start_time ## debug
+            print(f"Elapsed time for {seq_id}: {elapsed_time:.2f} seconds") ## debug
             yield seq_id, regions, scores
 
 
