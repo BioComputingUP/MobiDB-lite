@@ -20,9 +20,9 @@ MobiDB-lite is also available as Docker container [MobiDB-lite_docker](https://g
 
 ## Citation
 
-[MobiDB-lite 3.0: Fast consensus annotation of intrinsic disorder flavors in proteins](https://dx.doi.org/10.1093/bioinformatics/btaa1045)  
-*Necci M, Piovesan D, Clementel D, Dosztányi Z, Tosatto SCE*  
-**Bioinformatics (2020)** - DOI: [10.1093/bioinformatics/btaa1045](https://dx.doi.org/10.1093/bioinformatics/btaa1045)
+[MobiDB-lite 4.0: faster prediction of intrinsic protein disorder and structural compactness](https://academic.oup.com/bioinformatics/article/41/5/btaf297/8128331)  
+*Mahta Mehdiabadi , Matthias Blum , Giulio Tesei , Sören von Bülow , Kresten Lindorff-Larsen , Silvio C E Tosatto , Damiano Piovesan*  
+**Bioinformatics (2025)** - DOI: [10.1093/bioinformatics/btaf297](https://academic.oup.com/bioinformatics/article/41/5/btaf297/8128331)
 
 
 ## Installation
@@ -41,12 +41,9 @@ From GitHub:
     git clone https://github.com/BioComputingUP/MobiDB-lite.git
     pip install .
 
+To install the dependencies:  
 
-In the case the calculation of ensemble properties (compactness), the nu parameter, the following optional
-dependencies are required:
-
-* scikit-learn >= 1.4.2
-* numba >= 0.59.1
+    pip install -r requirements.txt
 
 
 ## Usage
