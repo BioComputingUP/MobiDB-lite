@@ -49,8 +49,13 @@ def main():
             if args.format == "interpro":
                 for feature, region in regions.items():
                     if feature in _FEATURES:
-                        for start, end in region:
-                            outfile.write(f"{seq_id}\t{start}\t{end}\t{feature}\n")
+                        if feature in ["Compact", "Extended"]:
+                            for start, end, _ in region:                            
+                                outfile.write(f"{seq_id}\t{start}\t{end}\t{feature}\n")
+                        else:
+                            for start, end in region:                                
+                                outfile.write(f"{seq_id}\t{start}\t{end}\t{feature}\n")
+
                     elif feature == "mobidblite":
                         for start, end in region:
                             outfile.write(f"{seq_id}\t{start}\t{end}\t-\n")
