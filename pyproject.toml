@@ -13,14 +13,15 @@ authors = [
   {name = "Damiano Piovesan", email = "damiano.piovesan@unipd.it"},
   {name = "Mahta Mehdiabadi", email = "mahta.mehdiabadi@studenti.unipd.it"}
 ]
-requires-python = ">=3.12.3"
-dependencies = []
+requires-python = ">=3.11.3,<3.15"
+dependencies = [
+  "joblib >= 1.5.2",
+  "numba >= 0.61.2",
+  "pandas >= 2.3.2",
+  "scikit-learn >= 1.4.2",
+]
 
 [project.optional-dependencies]
-nu = [
-  "scikit-learn >= 1.4.2",
-  "numba >= 0.59.1"
-]
 
 [tool.setuptools.packages.find]
 where = ["src"]

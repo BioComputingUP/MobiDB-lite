@@ -26,6 +26,9 @@ MobiDB-lite is also available as Docker container [MobiDB-lite_docker](https://g
 
 
 ## Installation
+
+Supported Python versions: >=3.11,<3.15
+
 You can use the tool simply cloning this repo and running `__main__.py` Python script. 
 which implements a command line interface.
 To avoid import errors you need to add the source root folder 
@@ -38,13 +41,26 @@ in this case.
 
 From GitHub:
 
-    git clone https://github.com/BioComputingUP/MobiDB-lite.git
-    pip install .
+```bash
+git clone https://github.com/BioComputingUP/MobiDB-lite.git
 
-To install the dependencies:  
+# one-off
+python3 -m venv .venv
 
-    pip install -r requirements.txt
+source .venv/bin/activate
+    
+pip install .
+```
 
+### How to install MobiDB-lite using Conda?
+
+You can create a Conda environment and install MobiDB-lite using the following commands:
+
+```bash
+conda create -n mobidb_lite python=3.12
+conda activate mobidb_lite
+pip install .
+```
 
 ## Usage
 
