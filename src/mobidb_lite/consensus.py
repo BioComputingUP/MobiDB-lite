@@ -117,7 +117,6 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
 
     os.unlink(disbin)
 
-
     fd, fasta = mkstemp(dir=tempdir)
     with open(fd, "wt") as fh:
         fh.write(f">1\n{sequence}\n")
@@ -125,13 +124,17 @@ def run_predictors(sequence: str, bindir: str, **kwargs) -> dict:
     results["seg"] = seg.run(os.path.join(bindir, "SEG"), fasta)
 
     if run_extra:
-            results['anchor'] = anchor.run_anchor(os.path.join(bindir, "ANCHOR"), fasta)
+        results['anchor'] = anchor.run_anchor(os.path.join(bindir, "ANCHOR"), fasta)
 
     os.unlink(fasta)
 
+
     states = {}
     for k in results:
-        states[k] = [(round(s, 3) if round_score else s) >= _THRESHOLDS[k] for s in results[k]]
+        if results[k] is not None:
+            states[k] = [(round(s, 3) if round_score else s) >= _THRESHOLDS[k] for s in results[k]]
+        else:
+            states[k] = None
 
     return results, states
 
@@ -243,7 +246,7 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     states = merge_long_disordered_regions(states)
 
     # Convert states lists into strings
-    scores_states = {pred_name: "".join([str(int(s)) for s in state]) for pred_name, state in scores_states.items()}
+    scores_states = {pred_name: "".join([str(int(s)) for s in state]) for pred_name, state in scores_states.items() if state is not None}
     scores_states["mobidblite"] = states
 
     results = {}
