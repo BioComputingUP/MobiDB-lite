@@ -1,5 +1,5 @@
 joblib==1.5.2
 numba==0.61.2
-numpy==2.3.2
+numpy>=2.0,<2.3
 pandas==2.3.2
 scikit-learn==1.4.2
