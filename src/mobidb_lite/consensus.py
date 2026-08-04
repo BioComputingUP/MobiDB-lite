@@ -187,7 +187,7 @@ def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     scores, scores_states = run_predictors(sequence, bindir, extra=run_extra, tempdir=tempdir)
 
     # Sub-regions
-    if len(sequence) == len(scores_states["seg"]):
+    if scores_states["seg"] is not None and len(sequence) == len(scores_states["seg"]):
         features = get_region_features(sequence, scores_states["seg"])
     else:
         features = None
