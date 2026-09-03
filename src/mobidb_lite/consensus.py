@@ -146,6 +146,7 @@ def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
         model_nu = nu_svr.load(os.path.join(datadir, "svr_model_nu_2.joblib"))
         kwargs["model_nu"] = model_nu
 
+
     if threads > 1:
         with ThreadPoolExecutor(max_workers=threads) as executor:
             fs = {}
@@ -178,7 +179,7 @@ def run(file: str, bindir: str, datadir: str, threads: int, **kwargs):
 def predict(sequence_id: str, sequence: str, bindir: str, **kwargs):
     force_consensus = kwargs.get("force", False)
     round_score = kwargs.get("round", False)
-    run_extra = kwargs.get("run_extra", False)
+    run_extra = kwargs.get("extra", False)
     tempdir = kwargs.get("tempdir")
     threshold = kwargs.get("threshold", _THRESHOLDS["mobidblite"])
     model_nu = kwargs.get("model_nu", None)
